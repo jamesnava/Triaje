@@ -398,7 +398,6 @@ class queryGalen(object):
 			obj_conectar.close_conection()
 			return rows
 
-
 	def query_EspecialidadMedico(self,dni):
 		obj_conectar=conect_bd.Conexion_Galen()
 		obj_conectar.ejecutar_conn()
@@ -428,6 +427,42 @@ class queryGalen(object):
 			
 			sql=f"""SELECT COUNT(P.NroDocumento) AS NRO FROM Pacientes AS P INNER JOIN Distritos AS D 
 			ON P.IdDistritoProcedencia=D.IdDistrito WHERE P.NroDocumento='{dni}' """
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	def query_Especialidades(self,valor):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT DISTINCT E.Nombre,E.IdEspecialidad FROM Servicios AS S INNER JOIN Especialidades AS E ON
+			 S.IdEspecialidad=E.IdEspecialidad WHERE E.Nombre LIKE '{valor}%' ORDER BY E.IdEspecialidad ASC"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	def datosEmpleadoEspecialidad(self,codigo):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT DISTINCT EMP.DNI,EMP.Nombres,EMP.ApellidoPaterno,EMP.ApellidoMaterno FROM Empleados AS EMP INNER JOIN Medicos AS ME ON EMP.IdEmpleado=ME.IdEmpleado 
+			INNER JOIN MedicosEspecialidad AS MESP ON ME.IdMedico=MESP.IdMedico WHERE MESP.IdEspecialidad={codigo}"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
 			

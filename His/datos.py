@@ -1,9 +1,10 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk,filedialog
 from tkcalendar import DateEntry
 from Consulta_Galen import queryGalen
 from Consulta_Triaje import queryTriaje
 from tkinter import messagebox
+import reporte
 
 class DataHis:
 	def __init__(self,dniusurio):
@@ -15,11 +16,11 @@ class DataHis:
 		#menu
 		self.menu=Menu(frame,tearoff=0)
 		self.menu.add_command(label="Ingresar Una interconsulta",command=self.TopInterconsulta)
-		self.menu.add_command(label='Eliminar')
+		self.menu.add_command(label='Eliminar',command=self.EliminarInterconsulta)
 
 		etiqueta=Label(frame,text="Fecha Atencion")
 		etiqueta.grid(row=1,column=1,padx=4)
-		self.fechaAtencion_G=DateEntry(frame,selectmode='day')
+		self.fechaAtencion_G=DateEntry(frame,selectmode='day',date_pattern='dd/mm/yyyy')
 		self.fechaAtencion_G.grid(row=1,column=2,padx=4)
 		self.fechaAtencion_G.bind("<<DateEntrySelected>>",self.LlenarTablaInterconsulta)
 
@@ -29,22 +30,63 @@ class DataHis:
 		txtBuscar=Entry(frame)
 		txtBuscar.grid(row=1,column=4,pady=10,padx=4)
 
-		self.table=ttk.Treeview(frame,columns=('#1','#2','#3','#4','#5','#6'),show='headings')		
-		self.table.heading("#1",text="DNI")
-		self.table.column("#1",width=60,anchor="center")
-		self.table.heading("#2",text="NOMBRES")
-		self.table.column("#2",width=200,anchor="center")
-		self.table.heading("#3",text="APELLIDOS")
+		self.table=ttk.Treeview(frame,columns=('#1','#2','#3','#4','#5','#6','#7'),show='headings')
+		self.table.heading("#1",text="id")
+		self.table.column("#1",width=0,anchor="center")		
+		self.table.heading("#2",text="DNI")
+		self.table.column("#2",width=60,anchor="center")
+		self.table.heading("#3",text="NOMBRES")
 		self.table.column("#3",width=200,anchor="center")
-		self.table.heading("#4",text="FECHA INGRESO")
-		self.table.column("#4",width=100,anchor="center")		
-		self.table.heading("#5",text="FECHA REGISTRO")
-		self.table.column("#5",width=100,anchor="center")
-		self.table.heading("#6",text="REGISTRADO POR")
+		self.table.heading("#4",text="APELLIDOS")
+		self.table.column("#4",width=200,anchor="center")
+		self.table.heading("#5",text="FECHA INGRESO")
+		self.table.column("#5",width=100,anchor="center")		
+		self.table.heading("#6",text="FECHA REGISTRO")
 		self.table.column("#6",width=100,anchor="center")
+		self.table.heading("#7",text="REGISTRADO POR")
+		self.table.column("#7",width=100,anchor="center")
 		self.table.grid(row=2,column=1,columnspan=4)
-		self.table.bind("<Button-3>",lambda event:self.menu.post(event.x_root,event.y_root))					
+		#self.table.bind("<Button-3>",lambda event:)
+		self.table.bind("<Button-3>",self.EventoSeleccion)					
 		#self.table.place(x=10,y=70,width=1200,height=550)
+
+		label=Label(frame,text='Generar Reporte',cursor='hand2',bg="#828682",fg='#131F75',font=("Helvetica", 16))
+		label.bind("<Button-1>",self.Reporte_Produccion)
+		label.grid(row=3,column=2,pady=10)
+
+		self.checkVariable=BooleanVar()
+		checkHospitalizacion=ttk.Checkbutton(frame,text="Hospitalizacion",variable=self.checkVariable)
+		checkHospitalizacion.grid(row=3,column=4,pady=10)
+
+	def Reporte_Produccion(self,event):
+		obj_report=reporte.Reporte()
+		hospitalizacion=self.checkVariable.get()
+		try:
+			file_Address=filedialog.asksaveasfile(mode="w",defaultextension=".xlsx")
+			#print(self.dniUser,file_Address,self.calendarioHis.selection_get())
+
+			aux=obj_report.Genera_RDatos(self.DniUsuario,file_Address,self.fechaAtencion_G.get_date())
+			
+			if aux:
+				messagebox.showinfo("Alerta","Se generó el archivo correctamente")
+			else:
+				messagebox.showinfo("Alerta","No pudo generarse")
+		except Exception as e:
+			messagebox.showinfo("Alerta",f"No pudo generarse el Archivo {e}")
+
+
+	def EventoSeleccion(self,event):
+		item=self.table.identify_row(event.y)
+		self.table.selection_set(item)
+		self.menu.post(event.x_root,event.y_root)
+
+	def EliminarInterconsulta(self):
+		confirmacion=messagebox.askokcancel("Confirmacion","Estás seguro de que quieres Eliminar?")
+		if confirmacion:
+			ID=self.table.item(self.table.selection()[0],"values")[0]
+			nro=self.obj_ConsultaTriaje.query_DeleteHis(ID)
+			if nro:
+				messagebox.showinfo("Notificación",'Se eliminó correctamente')
 
 	def TopInterconsulta(self):		
 		self.TopHis=Toplevel(bg="#074E86")
@@ -89,7 +131,7 @@ class DataHis:
 
 		etiqueta=Label(self.TopHis,text="Fecha Atencion:",font=font1,bg='#074E86',fg='#fff')
 		etiqueta.grid(row=3,column=3,padx=4)
-		self.fechaAtencion=DateEntry(self.TopHis,selectmode='day')
+		self.fechaAtencion=DateEntry(self.TopHis,selectmode='day',date_pattern='dd/mm/yyyy')
 		self.fechaAtencion.grid(row=3,column=4,padx=4)
 		
 
@@ -252,11 +294,14 @@ class DataHis:
 		self.table_CIE.bind('<<TreeviewSelect>>',self.itemTable_selected)
 
 	def buscar_cie(self,event):
-		self.borrar_tabla()
+		for item in self.table_CIE.get_children():
+			self.table_CIE.delete(item)
+
 		parametro=''		
 		if len(self.Entry_buscar_General.get())!=0:
 			parametro=parametro+self.Entry_buscar_General.get()
 			rows=self.obj_ConsultaTriaje.query_cie10(parametro)
+
 			for valores in rows:
 				self.table_CIE.insert('','end',values=(valores.CODCIE,valores.NOMBRE))
 
@@ -370,7 +415,7 @@ class DataHis:
 		self.borrar_tabla()		
 		for valores in rows:
 			rowsDatos=obj_consulta.query_DatosPaciente(valores.DNI_PAC)
-			self.table.insert('','end',values=(valores.DNI_PAC,rowsDatos[0].PrimerNombre,rowsDatos[0].ApellidoPaterno+" "+rowsDatos[0].ApellidoMaterno,valores.FechaIngreso,valores.FechaR,valores.DNI_USER))
+			self.table.insert('','end',values=(valores.ID_DETA,valores.DNI_PAC,rowsDatos[0].PrimerNombre,rowsDatos[0].ApellidoPaterno+" "+rowsDatos[0].ApellidoMaterno,valores.FechaIngreso,valores.FechaR,valores.DNI_USER))
 
 	def borrar_tabla(self):
 		for item in self.table.get_children():

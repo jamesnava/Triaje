@@ -333,7 +333,7 @@ class HisV(object):
 
 			etiqueta=Label(self.TopHis,text="FINANCIAMIENTO :",font=font1,bg='#074E86',fg='#fff')
 			etiqueta.grid(row=3,column=0)
-			self.combo_financiamiento=ttk.Combobox(self.TopHis,width=30,style="MyEntry.TEntry",values=['SIS','PARTICULAR','SALUDPOL','OTRO'],state='readonly')
+			self.combo_financiamiento=ttk.Combobox(self.TopHis,width=30,style="MyEntry.TEntry",values=['SIS','PARTICULAR','SALUDPOL','SOAT','OTRO'],state='readonly')
 			self.combo_financiamiento.current(0)
 			self.combo_financiamiento.unbind("<<ComboboxSelected>>")
 			self.combo_financiamiento.grid(row=3,column=1,columnspan=3,pady=5)	

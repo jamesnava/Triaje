@@ -662,7 +662,7 @@ class queryTriaje(object):
 		cursor=obj_conectar.get_cursor()
 		try:
 			rows=[]
-			sql=f"""SELECT * FROM CIE WHERE NOMBRE LIKE '%{descrip}%' or CODCIE LIKE '{descrip}%'"""
+			sql=f"""SELECT * FROM CIE WHERE  CODCIE LIKE '{descrip}%' OR NOMBRE LIKE '{descrip}%'"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()			
 		except Exception as e:
