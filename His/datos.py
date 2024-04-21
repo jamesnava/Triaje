@@ -4,18 +4,21 @@ from tkcalendar import DateEntry
 from Consulta_Galen import queryGalen
 from Consulta_Triaje import queryTriaje
 from tkinter import messagebox
+from Util import util
 import reporte
 
 class DataHis:
 	def __init__(self,dniusurio):
 		self.DniUsuario=dniusurio
 		self.obj_ConsultaTriaje=queryTriaje()
+		self.obj_ConsultaGalen=queryGalen()
 
 	def FrameDataHis(self,frame,width,heigh):
 		frame.grid_propagate(False)
 		#menu
 		self.menu=Menu(frame,tearoff=0)
 		self.menu.add_command(label="Ingresar Una interconsulta",command=self.TopInterconsulta)
+		self.menu.add_command(label="Actualizar",command=self.TopActualizarInterconsulta)
 		self.menu.add_command(label='Eliminar',command=self.EliminarInterconsulta)
 
 		etiqueta=Label(frame,text="Fecha Atencion")
@@ -229,15 +232,216 @@ class DataHis:
 		self.table_datos.heading("#4",text="LAB")
 		self.table_datos.column("#4",width=100,anchor="w",stretch='NO')				
 		self.table_datos.grid(row=3,column=0,columnspan=20) 
-		self.table_datos.configure(height=5)
-		
+		self.table_datos.configure(height=5)		
 
 		btn_addDatos=ttk.Button(self.TopHis,width=15,text="Agregar")
 		btn_addDatos["command"]=self.insertData
 		btn_addDatos.grid(row=15,column=2,pady=5)
+
 		btn_cancleDatos=ttk.Button(self.TopHis,width=15,text="Cancelar")
 		btn_cancleDatos["command"]=self.TopHis.destroy		
 		btn_cancleDatos.grid(row=15,column=4,pady=5)
+
+	def TopActualizarInterconsulta(self):		
+		if self.table.selection():
+			idAccion=self.table.item(self.table.selection())["values"][0]
+			rows=self.obj_ConsultaTriaje.query_SelectTable('HIS_DETA','ID_DETA',idAccion)
+			dni=rows[0][1]
+
+			rowsG=self.obj_ConsultaGalen.query_DatosPaciente(dni)
+			
+			self.TopHisA=Toplevel(bg="#074E86")
+			self.TopHisA.geometry("800x500")
+			self.TopHisA.title("Actualizar datos His")
+			self.TopHisA.resizable(0,0)
+			self.TopHisA.grab_set()			
+			font1=('Comic Sans MS',12,'bold')
+			#self.validador=0	
+			style=ttk.Style()
+			style.configure("MyEntry.TEntry",padding=4,foreground="#0000ff")
+
+			etiqueta=Label(self.TopHisA,text="DNI PACIENTE :",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=0)			
+			self.dni_p=StringVar()	
+
+			self.entry_DniPaciente=ttk.Entry(self.TopHisA,width=30,style="MyEntry.TEntry",textvariable=self.dni_p)					
+			self.entry_DniPaciente.grid(row=1,column=1,columnspan=3,pady=5)			
+			self.entry_DniPaciente.insert("end",dni)
+			self.entry_DniPaciente['state']='readonly'
+
+			etiqueta=Label(self.TopHisA,text="NOMBRES :",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=4)	
+
+			self.entry_NombrePaciente=ttk.Entry(self.TopHisA,width=30,style="MyEntry.TEntry")
+			self.entry_NombrePaciente.grid(row=1,column=5,columnspan=3,pady=5)
+			self.entry_NombrePaciente.insert("end",rowsG[0][0])
+			self.entry_NombrePaciente['state']='readonly'
+		
+			etiqueta=Label(self.TopHisA,text="APELLIDOS :",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=2,column=0)	
+
+			self.entry_ApellidosPaciente=ttk.Entry(self.TopHisA,width=30,style="MyEntry.TEntry")
+			self.entry_ApellidosPaciente.grid(row=2,column=1,columnspan=3,pady=5)
+			self.entry_ApellidosPaciente.insert("end",rowsG[0][2]+" "+rowsG[0][3])
+			self.entry_ApellidosPaciente['state']='readonly'			
+		
+
+			marco_perimetro=LabelFrame(self.TopHisA,text="Perimetro y cefálico abdominal",font=("Helvetica",11,"italic"),bg='#074E86',fg='#8E9192')
+			marco_perimetro.grid(row=6,column=0,columnspan=5,padx=5)
+
+			etiqueta=Label(marco_perimetro,text="PC:",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=1)
+			self.entry_PC=ttk.Entry(marco_perimetro,width=30,style="MyEntry.TEntry")
+			self.entry_PC.grid(row=1,column=2,columnspan=2,pady=5)
+			self.entry_PC.insert("end",rows[0][6])
+
+			etiqueta=Label(marco_perimetro,text="Pab:",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=4)
+			self.entry_Pab=ttk.Entry(marco_perimetro,width=30,style="MyEntry.TEntry")
+			self.entry_Pab.grid(row=1,column=5,columnspan=2,pady=5)
+			self.entry_Pab.insert("end",rows[0][2])
+
+
+			marco_perimetro=LabelFrame(self.TopHisA,text="Evaluacion Antrometrica Hemoglobina",font=("Helvetica",11,"italic"),bg='#074E86',fg='#8E9192')
+			marco_perimetro.grid(row=7,column=0,columnspan=9,padx=5)
+
+			etiqueta=Label(marco_perimetro,text="Peso:",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=1)
+			self.entry_peso=ttk.Entry(marco_perimetro,width=30,style="MyEntry.TEntry")
+			self.entry_peso.grid(row=1,column=2,columnspan=2,pady=5)
+			self.entry_peso.insert("end",rows[0][3])
+
+			etiqueta=Label(marco_perimetro,text="Talla:",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=4)
+			self.entry_talla=ttk.Entry(marco_perimetro,width=30,style="MyEntry.TEntry")
+			self.entry_talla.grid(row=1,column=5,columnspan=2,pady=5)
+			self.entry_talla.insert("end",rows[0][4])
+
+			etiqueta=Label(marco_perimetro,text="Hb:",font=font1,bg='#074E86',fg='#fff')
+			etiqueta.grid(row=1,column=7)
+			self.entry_Hb=ttk.Entry(marco_perimetro,width=30,style="MyEntry.TEntry")
+			self.entry_Hb.grid(row=1,column=8,columnspan=2,pady=5)
+			self.entry_Hb.insert("end",rows[0][5])
+
+			
+
+			marco_perimetro=LabelFrame(self.TopHisA,text="Diagnosticos",font=("Helvetica",11,"italic"),bg='#074E86',fg='#8E9192')
+			marco_perimetro.grid(row=9,column=0,columnspan=12,padx=5)		
+
+			
+
+			style=ttk.Style()
+			style.theme_use("default")
+			style.configure("Treeview",background="silver",foreground="black",rowheight=25,fieldbackground="silver")
+			style.map('Treeview',background=[('selected','green')])
+
+			self.table_datos=ttk.Treeview(marco_perimetro,height=5,columns=('#1','#2','#3','#4','#5'),show='headings')	
+
+			self.table_datos.heading("#1",text="ID")
+			self.table_datos.column("#1",width=10,anchor="w",stretch="NO")
+			self.table_datos.heading("#2",text="CIE10")
+			self.table_datos.column("#2",width=100,anchor="w",stretch='NO')	
+			self.table_datos.heading("#3",text="DESCRIPCION")
+			self.table_datos.column("#3",width=300,anchor="w",stretch='NO')
+			self.table_datos.heading("#4",text="TIPO DX")
+			self.table_datos.column("#4",width=200,anchor="w",stretch='NO')
+			self.table_datos.heading("#5",text="LAB")
+			self.table_datos.column("#5",width=100,anchor="w",stretch='NO')				
+			self.table_datos.grid(row=3,column=0,columnspan=20) 
+			self.table_datos.configure(height=5)
+
+			rowsDiagnosticos=self.obj_ConsultaTriaje.query_SelectTable('DIAGNOSTICOS','ID_DETA',idAccion)		
+			util.llenar_Table(self.table_datos,rowsDiagnosticos,['Id_Diagnostico','CODCIE','Descripcion','TipDx','Lab'])
+			self.table_datos.bind("<Double-Button-1>",self.top_EditarCie)
+
+			btn_addDatos=ttk.Button(self.TopHisA,width=15,text="Actualizar")
+			btn_addDatos["command"]=lambda:self.UpdateInterconsulta(idAccion)
+			btn_addDatos.grid(row=15,column=2,pady=5)
+
+			btn_cancleDatos=ttk.Button(self.TopHisA,width=15,text="Cancelar")
+			btn_cancleDatos["command"]=self.TopHisA.destroy		
+			btn_cancleDatos.grid(row=15,column=4,pady=5)
+		else:
+			messagebox.showerror("Alerta","Seleecion un Item")
+
+	def UpdateInterconsulta(self,idHis):
+		pc=self.entry_PC.get()
+		pab=self.entry_Pab.get()
+		peso=self.entry_peso.get()
+		talla=self.entry_talla.get()
+		hb=self.entry_Hb.get()
+		
+
+		for child in self.table_datos.get_children():
+			iddiag,descripcion,tipoDx=self.table_datos.item(child)["values"][0],self.table_datos.item(child)["values"][2],self.table_datos.item(child)["values"][3]
+			lab,codcie=self.table_datos.item(child)["values"][4],self.table_datos.item(child)["values"][1]
+			self.obj_ConsultaTriaje.Update_diagnostico([iddiag,descripcion,tipoDx,lab,codcie])
+
+		self.obj_ConsultaTriaje.Update_DetalleHis(idHis,pc,pab,peso,talla,hb)
+		messagebox.showinfo("Notificación","Success!")
+		self.TopHisA.destroy()	
+
+	def top_EditarCie(self,event):
+		self.top_EditarC=Toplevel()
+		self.top_EditarC.title("Buscar Diagnostico")
+		self.top_EditarC.iconbitmap('img/buscar.ico')
+		self.top_EditarC.geometry("700x100")
+		self.top_EditarC.resizable(0,0)
+		self.top_EditarC.grab_set()
+
+		itemTable=self.table_datos.selection()[0]
+		id_diagnostico=self.table_datos.item(self.table_datos.selection()[0])['values'][0]
+	
+
+		label=Label(self.top_EditarC,text="CIE")
+		label.grid(row=1,column=1)
+		self.cie_entryEditar=ttk.Entry(self.top_EditarC,width=15)
+		self.cie_entryEditar.bind("<Return>",self.fill_DXv2)
+		self.cie_entryEditar.grid(row=1,column=2)
+
+		label=Label(self.top_EditarC,text="Descripcion")
+		label.grid(row=1,column=3)
+		self.Descripcion_entryEditar=ttk.Entry(self.top_EditarC,width=30)
+		self.Descripcion_entryEditar.grid(row=1,column=4)
+
+		label=Label(self.top_EditarC,text="Tipo")
+		label.grid(row=1,column=5)
+		self.Tipo_entryEditar=ttk.Combobox(self.top_EditarC,width=15,values=["P","D","R"])
+		self.Tipo_entryEditar.current(0)
+		self.Tipo_entryEditar.grid(row=1,column=6)
+
+		label=Label(self.top_EditarC,text="Lab")
+		label.grid(row=1,column=7)
+		self.Lab_entryEditar=ttk.Entry(self.top_EditarC,width=15)
+		self.Lab_entryEditar.grid(row=1,column=8)
+
+		button_GrabarDX=ttk.Button(self.top_EditarC,text="Aceptar")
+		button_GrabarDX["command"]=lambda:self.insert_TablaEditar(itemTable,id_diagnostico)
+
+		button_GrabarDX.grid(row=2,column=4,pady=5)
+
+	def insert_TablaEditar(self,itemTable,id_diagnostico):
+		codigo_cie=self.cie_entryEditar.get()
+		descripcionDX=self.Descripcion_entryEditar.get()
+		tipoDx=self.Tipo_entryEditar.get()
+		lab=self.Lab_entryEditar.get()
+
+		self.table_datos.insert('','end',values=(id_diagnostico,codigo_cie,descripcionDX,tipoDx,lab))
+		self.top_EditarC.destroy()
+		#self.Top_Editar.grab_set()
+		self.table_datos.delete(itemTable)
+
+	def fill_DXv2(self,event):
+		param=self.cie_entryEditar.get()
+		rows=self.obj_ConsultaTriaje.query_cie10Param(param)
+
+		try:
+			self.Descripcion_entryEditar.delete(0,'end')
+			self.Descripcion_entryEditar.insert(0,rows[0].NOMBRE)
+		except Exception as e:
+			messagebox.showerror("Alerta","Datos no Encontrados")			
+			self.top_EditarC.destroy()
+			self.Top_Editar.grab_set()	
 
 	def llenarCampoEspecialidad(self,combo,dniUser):
 		obj_consulta=queryGalen()

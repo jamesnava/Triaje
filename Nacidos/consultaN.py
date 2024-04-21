@@ -7,7 +7,7 @@ class Consulta(object):
 		obj_conectar.ejecutar_conn()
 		self.cursor=obj_conectar.get_cursor()
 	
-	def insertarMadre(self,dni,grupof,rpm,hta,itu3,dosis):
+	def insertarMadre(self,dni,grupof,rpm,hta,itu3,dosis,cpn,observacion):
 		nro=0
 		IdM=self.get_id('MADRE','IDMADRE')
 		nro=IdM[0].ID		
@@ -16,7 +16,7 @@ class Consulta(object):
 		else:
 			nro=nro+1
 		
-		sql=f"""INSERT INTO MADRE VALUES({nro},'{dni}','{grupof}','{rpm}','{hta}','{itu3}','{dosis}',0,0)"""
+		sql=f"""INSERT INTO MADRE VALUES({nro},'{dni}','{grupof}','{rpm}','{hta}','{itu3}','{dosis}',0,0,'{cpn}','{observacion}')"""
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount
@@ -30,7 +30,7 @@ class Consulta(object):
 			messagebox.showerror("Error",e)
 		
 		
-	def insertParto(self,procedencia,idmadre,hiso,heso,hisp,tipoP):
+	def insertParto(self,procedencia,idmadre,hiso,heso,hisp,tipoP,cesaria):
 		nro=0
 		IdP=self.get_id('PARTO','ID_PARTO')
 		nro=IdP[0].ID
@@ -41,7 +41,7 @@ class Consulta(object):
 
 		#print(nro,procedencia,idmadre,hiso,heso,hisp,tipoP)
 		try:
-			sql=f"""INSERT INTO PARTO VALUES({nro},'{procedencia}',{idmadre},'{hiso}','{heso}','{hisp}','{tipoP}')"""
+			sql=f"""INSERT INTO PARTO VALUES({nro},'{procedencia}',{idmadre},'{hiso}','{heso}','{hisp}','{tipoP}','{cesaria}')"""
 			self.cursor.execute(sql)
 			self.cursor.commit()
 			return self.cursor.rowcount
@@ -54,6 +54,17 @@ class Consulta(object):
 		try:
 			rows=[]
 			sql=f"""SELECT MAX({idd}) AS ID FROM {Tabla}"""
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
+
+	def get_idTable(self,Tabla,condicionName,condicionValor,idname):
+		try:
+			rows=[]
+			sql=f"""SELECT {idname} FROM {Tabla} WHERE {condicionName}={condicionValor}"""
+			
 			self.cursor.execute(sql)
 			rows=self.cursor.fetchall()			
 			return rows
@@ -98,10 +109,41 @@ class Consulta(object):
 
 			sql=f"""INSERT INTO AIR VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]},{datos[7]},
 			{datos[8]},{datos[9]},{datos[10]},{datos[11]},{datos[12]},{datos[13]},{datos[14]},{datos[15]},{datos[16]},{datos[17]},'{datos[18]}','{datos[19]}',
-			'{datos[20]}','{datos[21]}','{datos[22]}','{datos[23]}','{datos[24]}','{datos[25]}','{datos[26]}','{datos[27]}','{datos[28]}','{datos[29]}','{datos[30]}',0,'{fechaN}',0,{iduser},{datos[31]})"""
+			'{datos[20]}','{datos[21]}','{datos[22]}','{datos[23]}','{datos[24]}','{datos[25]}','{datos[26]}','{datos[27]}','{datos[28]}','{datos[29]}','{datos[30]}',0,'{fechaN}',0,{iduser},{datos[31]},'{datos[32]}','{datos[33]}')"""
 			self.cursor.execute(sql)
 			self.cursor.commit()
 			return self.cursor.rowcount,nro
+		except Exception as e:
+			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
+
+	def Insert_AIRNObservacion(self,datos):
+
+		try:
+			sql=f"""INSERT INTO OBSERVACIONAIRN(id_obs,Id_AIR,ID_ALOJAMIENTO,FECHAI,ESTADO) 
+			VALUES({datos[0]},{datos[1]},{datos[2]},(SELECT GETDATE()),{datos[3]})"""
+			self.cursor.execute(sql)
+			self.cursor.commit()
+			return self.cursor.rowcount
+			
+		except Exception as e:
+			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
+
+	def Insert_AIRNObservacionDX(self,datos):		
+		try:
+
+			sql=f"""INSERT INTO DXOBSERVACIONAIRN VALUES({datos[0]},'{datos[1]}','{datos[2]}','{datos[3]}',{datos[4]})"""
+			self.cursor.execute(sql)
+			self.cursor.commit()
+			return self.cursor.rowcount
+		except Exception as e:
+			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
+
+	def AltaObservacion(self,estado,idobs):
+		try:
+			sql=f"""UPDATE OBSERVACIONAIRN SET FECHAS=GETDATE(),ESTADO='{estado}' WHERE id_obs={idobs}"""
+			self.cursor.execute(sql)
+			self.cursor.commit()
+			return self.cursor.rowcount
 		except Exception as e:
 			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
 
@@ -150,7 +192,8 @@ class Consulta(object):
 			nro=1
 		else:
 			nro=nro+1
-		sql=f"""INSERT INTO ALOJAMIENTO VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]})"""		
+		sql=f"""INSERT INTO ALOJAMIENTO(ID_ALOJAMIENTO,FECHA_ALTA,ALTA,FECHA_TAMIZAJE,HEMOGLOBINA,DR_RESPONSABLE,OBSERVACION,Id_AIR) 
+		VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]})"""		
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount
@@ -177,8 +220,8 @@ class Consulta(object):
 	def consulta_DigitadosAIRN(self):
 		try:
 			rows=[]
-			sql=f"""SELECT TOP 50 M.DNI,M.GRUPO_FACTOR,A.HCL FROM MADRE AS 
-			M INNER JOIN AIR AS A ON M.IDMADRE=A.IDMADRE AND M.estadoAIRN=1 AND M.estadoPARTO=1 AND A.estado=1 """
+			sql=f"""SELECT TOP 50 M.DNI,M.GRUPO_FACTOR,A.HCL,A.Fecha_Nacimiento,A.Id_AIR FROM MADRE AS 
+			M INNER JOIN AIR AS A ON M.IDMADRE=A.IDMADRE WHERE M.estadoAIRN=1 AND M.estadoPARTO=1 AND A.estado=1 ORDER BY A.Fecha_Nacimiento DESC """
 			self.cursor.execute(sql)
 			rows=self.cursor.fetchall()			
 			return rows
@@ -215,4 +258,16 @@ class Consulta(object):
 			return rows
 		except Exception as e:
 			print(e)
+
+#tamizaje
+	def insert_Tamizaje(self,idairn,filtro,toma1,toma2):
+		try:
+			sql=f"""INSERT INTO TAMIZAJE VALUES({idairn},'{filtro}','{toma1}','{toma2}')"""		
+			self.cursor.execute(sql)
+			self.cursor.commit()
+			return self.cursor.rowcount
+		except Exception as e:
+			raise e
+		finally:
+			pass
 		

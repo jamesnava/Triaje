@@ -433,6 +433,21 @@ class queryTriaje(object):
 		finally:
 			cursor.close()
 			obj_conectar.close_conection()
+
+	def update_Table(self,tabla,campo,condicion,campovalor,condicionvalor):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql="UPDATE {} SET {}='{}' WHERE {}='{}'".format(tabla,campo,campovalor,condicion,condicionvalor)
+			cursor.execute(sql)
+			cursor.commit()
+			return cursor.rowcount
+		except Exception as e:
+			raise e
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
 		
 	def change_password(self,passs,dni):
 		obj_conectar=conect_bd.Conexion_Triaje()
@@ -742,7 +757,7 @@ class queryTriaje(object):
 			cursor.close()
 			obj_conectar.close_conection()
 
-		
+	
 
 	def consultaRegistroPaciente(self,dnipac,idServicio,FechaIngreso):
 		obj_conectar=conect_bd.Conexion_Triaje()
@@ -959,7 +974,24 @@ class queryTriaje(object):
 		finally:
 			cursor.close()
 			obj_conectar.close_conection()
-			return nro
+			
+
+	def query_SelectTable(self,tabla,campocondicion,valorcondicion):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+
+		try:
+			sql=f"""SELECT * FROM {tabla} WHERE {campocondicion}={valorcondicion}"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			return rows
+		except Exception as e:
+			raise e
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			
 		
 
 

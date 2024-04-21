@@ -114,6 +114,7 @@ class ReporteHis(object):
 		fechaF=self.fechaHasta.get_date()		
 		obj_reporte=Reporte()
 		obj_reporte.Genera_RDatosGeneral(dni_,file_Address,fechaI,fechaF,idespecialidad)
+		
 
 		
 		

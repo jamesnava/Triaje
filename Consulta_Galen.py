@@ -24,19 +24,19 @@ class queryGalen(object):
 		obj_conectar=conect_bd.Conexion_Galen()
 		obj_conectar.ejecutar_conn()
 		cursor=obj_conectar.get_cursor()
+		
 		try:
 			rows=[]
-			sql=f"""SELECT * FROM Pacientes INNER JOIN CentrosPoblados
-		 		ON Pacientes.IdCentroPobladoDomicilio=CentrosPoblados.IdCentroPoblado WHERE NroDocumento='{dni}'"""
+			sql=f"""SELECT * FROM Pacientes INNER JOIN CentrosPoblados ON Pacientes.IdCentroPobladoDomicilio=CentrosPoblados.IdCentroPoblado WHERE NroDocumento='{dni.strip()}'"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
-			
+			cursor.close()
+			return rows	
 		except Exception as e:
 			print(e)
-		finally:			
-			cursor.close()
+		finally:		
 			obj_conectar.close_conection()
-			return rows		
+				
 
 	def query_PacienteV1(self,dni):
 		obj_conectar=conect_bd.Conexion_Galen()
@@ -320,7 +320,6 @@ class queryGalen(object):
 		obj_conectar=conect_bd.Conexion_Galen()
 		obj_conectar.ejecutar_conn()
 		cursor=obj_conectar.get_cursor()
-
 		try:
 			rows=[]
 			sql=f"""SELECT DNI,Nombres,ApellidoPaterno,ApellidoMaterno  FROM Empleados WHERE DNI='{dni}'"""

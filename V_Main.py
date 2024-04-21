@@ -161,6 +161,11 @@ class Ventana_Principal(object):
 		self.IcAlojamiento=modificar_Icon(addressIcon+"alojamiento.png")
 		self.M_Nacidos.add_command(label='Alojamiento Conjunto',command=self.Alojamiento,image=self.IcAlojamiento,compound="left")
 
+	def Tamizaje(self):
+		#addressIcon="img/menue/"
+		#self.IcAlojamiento=modificar_Icon(addressIcon+"alojamiento.png")
+		self.M_Nacidos.add_command(label='Tamizaje',command=self.tamizaje,compound="left")
+
 	def ReporteNacidos(self):
 		addressIcon="img/menue/"
 
@@ -240,6 +245,14 @@ class Ventana_Principal(object):
 		obj_Alojamiento=Madre.MadreN(self.Frame_ALOJAMIENTO,self.width,self.height)
 		obj_Alojamiento.Frame_Alojamiento(self.Frame_ALOJAMIENTO,self.width,self.height)
 
+	def tamizaje(self):		
+		self.Frame_Tamizaje=Frame(self.Frame_Principal,width=self.width,height=self.height,bg="#828682")
+		self.Frame_Tamizaje.place(x=0,y=0)
+		self.Frame_Tamizaje.pack_propagate(False)
+		from Nacidos import Tamizaje
+		obj_Alojamiento=Tamizaje.Tamizaje(self.Frame_Tamizaje,self.width,self.height)
+		obj_Alojamiento.Frame_Tamizaje(self.Frame_Tamizaje,self.width,self.height)
+
 	def DataHis(self):
 		from His.datos import DataHis
 		self.Frame_HisData=Frame(self.Frame_Principal,width=self.width,height=self.height,bg="#828682")
@@ -253,7 +266,7 @@ class Ventana_Principal(object):
 		
 		self.Frame_HisReport=Frame(self.Frame_Principal,width=self.width,height=self.height,bg="#828682")
 		self.Frame_HisReport.place(x=0,y=0)
-		self.Frame_HisReport.pack_propagate(False)
+		self.Frame_HisReport.pack_propagate(False)		
 		obj_HISReporte=ReporteHis(self.dni)
 		obj_HISReporte.Frame_Reporte(self.Frame_HisReport,self.width,self.height)
 

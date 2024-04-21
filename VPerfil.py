@@ -93,6 +93,10 @@ class Perfiles(object):
 		check=Checkbutton(marcoAlojamiento,text="Reporte",variable=self.ReporteNacido)
 		check.grid(row=1,column=3,pady=5,padx=5)
 
+		self.tamizaje=BooleanVar()
+		check=Checkbutton(marcoAlojamiento,text="Tamizaje",variable=self.tamizaje)
+		check.grid(row=1,column=4,pady=5,padx=5)
+
 		marcoAlojamiento=LabelFrame(self.Frame_Perfil,text="Neonatología",borderwidth=2, relief="solid",width=int(width*0.5),height=int(height*0.4),bg="#949BAA")
 		marcoAlojamiento.grid(row=5,column=1)
 
@@ -163,7 +167,7 @@ class Perfiles(object):
 		'IncidenciaCita':int(self.checkIncidenciasTriajeT.get()),'WhatsAppCita':int(self.checkWhatsApp.get()),'ProduccionHis':int(self.produccionhis.get()),
 		'MReporteHis':int(self.ReporteHis.get()),'MDataHis':int(self.dataHis.get()),'AtencionAirn':int(self.Airn.get()),'NacidoAlojamiento':int(self.Alojamiento.get()),'ReporteNacidos':int(self.ReporteNacido.get()),
 		'DatosGeneralesNeo':int(self.DatosGeneralesNeo.get()),'IntermediosNeo':int(self.IntermedioNeo.get()),'PatologicosNeo':int(self.PatologicosNeo.get())
-		,'RecuperacionNeo':int(self.RecuperacionNeo.get()),'UcinNeo':int(self.Ucinneo.get()),'PacienteInsertar':int(self.IPaciente.get()),'PacienteListar':int(self.ListarPaciente.get())}
+		,'RecuperacionNeo':int(self.RecuperacionNeo.get()),'UcinNeo':int(self.Ucinneo.get()),'PacienteInsertar':int(self.IPaciente.get()),'PacienteListar':int(self.ListarPaciente.get()),'Tamizaje':int(self.tamizaje.get())}
 		
 		
 		if self.table_Perfiles.selection():

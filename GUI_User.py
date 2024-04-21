@@ -210,15 +210,63 @@ class Usuario(object):
 		for valores in rows:			
 			self.table_General.insert('','end',values=(valores.dni,valores.Usuario,valores.estado))
 
+		self.btn_MPerfil=ttk.Button(self.ventana_UserReport,text='Cambiar Perfil')
+		self.btn_MPerfil.place(x=10,y=400)
+		self.btn_MPerfil.configure(command=self.VentanaChangePerfil)
+
 		self.btn_Restaurar=ttk.Button(self.ventana_UserReport,text='REESTABLECER PASSWORD')
-		self.btn_Restaurar.place(x=10,y=400)
+		self.btn_Restaurar.place(x=120,y=400)
 		self.btn_Restaurar['command']=self.top_changePassword
+
 		self.btn_Activar=ttk.Button(self.ventana_UserReport,text='ACTIVAR')
-		self.btn_Activar.place(x=200,y=400)
+		self.btn_Activar.place(x=300,y=400)
 		self.btn_Activar['command']=lambda:self.eventos_('ESTADOACTIVO') 
+
 		self.btn_Inactivar=ttk.Button(self.ventana_UserReport,text='INACTIVAR')
-		self.btn_Inactivar.place(x=300,y=400)
-		self.btn_Inactivar['command']=lambda:self.eventos_('ESTADOINACTIVO')		
+		self.btn_Inactivar.place(x=400,y=400)
+		self.btn_Inactivar['command']=lambda:self.eventos_('ESTADOINACTIVO')
+
+
+	def VentanaChangePerfil(self):
+		if len(self.table_General.focus())!=0:
+			dni=self.table_General.item(self.table_General.selection()[0],option='values')[0]
+			
+			self.ventana_Perfil=Toplevel()		
+			self.ventana_Perfil.geometry('300x120')
+			self.ventana_Perfil.attributes('-topmost',True)
+			self.ventana_Perfil.title('Cambiar Perfil')
+			self.ventana_Perfil.grab_set()
+
+			label=Label(self.ventana_Perfil,text="Perfil")
+			label.grid(row=1,column=1,pady=10)
+			
+			self.combo=ttk.Combobox(self.ventana_Perfil)
+			
+			rows=self.obj_Triaje.consultaPefil()
+			valores=[str(valor.idRol)+"-"+valor.nombre for valor in rows]
+
+			self.combo.configure(values=valores)
+			self.combo.grid(row=1,column=2,pady=10)
+			#combo.current(0)
+
+			btn_Aceptar=ttk.Button(self.ventana_Perfil,text='Aceptar')
+			btn_Aceptar.grid(row=2,column=1)
+			btn_Aceptar['command']=lambda:self.update_Perfil(dni)		 
+
+			btn_Cancelar=ttk.Button(self.ventana_Perfil,text='Cancelar')
+			btn_Cancelar.configure(command=self.ventana_Perfil.destroy)
+			btn_Cancelar.grid(row=2,column=2)
+		else:
+			messagebox.showinfo('Alerta','Seleccione un valor')	
+
+	def update_Perfil(self,dni):
+		indice=self.combo.current()
+		valor=self.combo["values"][indice]
+		perfil=valor[:valor.find("-")]		
+		nro=self.obj_Triaje.update_Table("USUARIO","idRol","dni",perfil,dni)
+		if nro:
+			messagebox.showinfo("Alerta","Success")
+			self.ventana_Perfil.destroy()
 
 	def eventos_(self,identificador):
 		if len(self.table_General.focus())!=0:
@@ -240,6 +288,7 @@ class Usuario(object):
 				self.ventana_UserReport.destroy()
 		else:
 			messagebox.showinfo('Alerta','Seleccione un valor')
+
 	def top_changePassword(self):		
 		self.ventana_ChangePass=Toplevel()
 		self.ventana_ChangePass.geometry('300x100')
@@ -261,6 +310,7 @@ class Usuario(object):
 		btn_Cancelar.place(x=120,y=60)
 		btn_Cancelar['command']=self.ventana_ChangePass.destroy
 		
+
 		
 
 
