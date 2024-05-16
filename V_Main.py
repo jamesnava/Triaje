@@ -168,7 +168,6 @@ class Ventana_Principal(object):
 
 	def ReporteNacidos(self):
 		addressIcon="img/menue/"
-
 		self.IcNacido=modificar_Icon(addressIcon+"ListCita.png")
 		self.M_Nacidos.add_command(label='Reporte',command=self.obj_ReporteAirn.TopReporte,image=self.IcNacido,compound="left")
 
@@ -233,7 +232,7 @@ class Ventana_Principal(object):
 		self.Frame_AIRN.place(x=0,y=0)
 		self.Frame_AIRN.pack_propagate(False)
 		from Nacidos import Madre
-		obj_AIRN=Madre.MadreN(self.Frame_AIRN,self.width,self.height)
+		obj_AIRN=Madre.MadreN(self.Frame_AIRN,self.width,self.height,self.Usuario)
 		obj_AIRN.Frame_Madre(self.iduser)
 
 	def Alojamiento(self):
@@ -242,7 +241,7 @@ class Ventana_Principal(object):
 		self.Frame_ALOJAMIENTO.place(x=0,y=0)
 		self.Frame_ALOJAMIENTO.pack_propagate(False)
 		from Nacidos import Madre
-		obj_Alojamiento=Madre.MadreN(self.Frame_ALOJAMIENTO,self.width,self.height)
+		obj_Alojamiento=Madre.MadreN(self.Frame_ALOJAMIENTO,self.width,self.height,self.Usuario)
 		obj_Alojamiento.Frame_Alojamiento(self.Frame_ALOJAMIENTO,self.width,self.height)
 
 	def tamizaje(self):		

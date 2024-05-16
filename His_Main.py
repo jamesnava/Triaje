@@ -98,12 +98,10 @@ class HisV(object):
 				insertButton["command"]=lambda:self.Top_His(self.Lista_Menu.get(self.Lista_Menu.curselection())[:8])
 			else:
 				messagebox.showerror("Error!!","La inserción solo será posible dentro de los 5 dias, desde la antención ")
-
-		else:
-			
+		else:			
 			insertButton["state"]="disabled"
 
-		marco_Insert=LabelFrame(self.FrameRight,text="Produccion His",font=("Helvetica",11,"italic"),bg='#D1DAE2',width=700,height=400)
+		marco_Insert=LabelFrame(self.FrameRight,text="Produccion His",font=("Helvetica",11,"italic"),bg='#D1DAE2',width=700,height=600)
 		marco_Insert.grid(row=1,column=0,columnspan=9,padx=5)
 		marco_Insert.grid_propagate(False)
 
@@ -165,8 +163,7 @@ class HisV(object):
 			Entry_Hb.insert(0,rows[0].Hb)
 
 
-		self.table_editar=ttk.Treeview(marco_Insert,height=5,columns=('#1','#2','#3','#4','#5'),show='headings')	
-
+		self.table_editar=ttk.Treeview(marco_Insert,height=3,columns=('#1','#2','#3','#4','#5'),show='headings')
 		self.table_editar.heading("#1",text="ID")
 		self.table_editar.column("#1",width=50,anchor="w",stretch='NO')
 		self.table_editar.heading("#2",text="DESCRIPCION")
@@ -183,6 +180,7 @@ class HisV(object):
 
 		if id_deta:		
 			self.llenar_EditaDiagnostico(id_deta)
+
 
 		btn_guardar=ttk.Button(marco_Insert,width=10,text="Grabar")
 		##error here

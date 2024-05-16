@@ -1,4 +1,5 @@
 import conect_bd
+import pyodbc
 from tkinter import messagebox
 class Consulta(object):
 
@@ -7,7 +8,7 @@ class Consulta(object):
 		obj_conectar.ejecutar_conn()
 		self.cursor=obj_conectar.get_cursor()
 	
-	def insertarMadre(self,dni,grupof,rpm,hta,itu3,dosis,cpn,observacion):
+	def insertarMadre(self,dni,grupof,rpm,hta,itu3,dosis,cpn,observacion,usuario,ingresoAlojamiento,Egestacional):
 		nro=0
 		IdM=self.get_id('MADRE','IDMADRE')
 		nro=IdM[0].ID		
@@ -16,7 +17,7 @@ class Consulta(object):
 		else:
 			nro=nro+1
 		
-		sql=f"""INSERT INTO MADRE VALUES({nro},'{dni}','{grupof}','{rpm}','{hta}','{itu3}','{dosis}',0,0,'{cpn}','{observacion}')"""
+		sql=f"""INSERT INTO MADRE VALUES({nro},'{dni}','{grupof}','{rpm}','{hta}','{itu3}','{dosis}',0,0,'{cpn}','{observacion}','{usuario}',GETDATE(),'{ingresoAlojamiento}',{Egestacional})"""
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount
@@ -28,7 +29,22 @@ class Consulta(object):
 			return self.cursor.rowcount
 		except Exception as e:
 			messagebox.showerror("Error",e)
-		
+	
+	def deleteTable(self,tabla,campo,valor):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""DELETE FROM {Tabla} WHERE {campo}={valor}"""
+			cursor.execute(sql)
+			cursor.commit()
+			nro=cursor.rowcount
+			cursor.close()
+			return nro
+		except Exception as e:
+			messagebox.showerror("Error",e)
+		finally:
+			obj_conectar.close_conection()
 		
 	def insertParto(self,procedencia,idmadre,hiso,heso,hisp,tipoP,cesaria):
 		nro=0
@@ -39,15 +55,11 @@ class Consulta(object):
 		else:
 			nro=nro+1
 
-		#print(nro,procedencia,idmadre,hiso,heso,hisp,tipoP)
-		try:
-			sql=f"""INSERT INTO PARTO VALUES({nro},'{procedencia}',{idmadre},'{hiso}','{heso}','{hisp}','{tipoP}','{cesaria}')"""
-			self.cursor.execute(sql)
-			self.cursor.commit()
-			return self.cursor.rowcount
-		except Exception as e:
-			messagebox.showerror("Notificación",f"Error {e}")
-		
+		#print('here',nro,procedencia,idmadre,hiso,heso,hisp,tipoP,cesaria)
+		sql=f"""INSERT INTO PARTO VALUES({nro},'{procedencia}',{idmadre},'{hiso}','{heso}','{hisp}','{tipoP}','{cesaria}')"""
+		self.cursor.execute(sql)
+		self.cursor.commit()
+		return self.cursor.rowcount		
 
 	def get_id(self,Tabla,idd):
 		
@@ -70,11 +82,42 @@ class Consulta(object):
 			return rows
 		except Exception as e:
 			print(e)
+	def QUERY_MADRE(self,idmadre):
+		try:
+			rows=[]
+			sql=f"""SELECT IDMADRE FROM MADRE WHERE IDMADRE={idmadre} AND INGRESOALOJAMIENTO='1'"""
+			
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
+
+	def get_idTableSTR(self,Tabla,condicionName,condicionValor,idname):
+		try:
+			rows=[]
+			sql=f"""SELECT {idname} FROM {Tabla} WHERE {condicionName}='{condicionValor}'"""
+			
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
 
 	def consulta_Tabla(self,Tabla,condicion1,condicion2,valor1,valor2):
 		try:
 			rows=[]
 			sql=f"""SELECT * FROM {Tabla} WHERE {condicion1}={valor1} OR {condicion2}={valor2}"""
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
+
+	def consulta_Tabla1(self,Tabla,condicion1,valor1):
+		try:
+			rows=[]
+			sql=f"""SELECT * FROM {Tabla} WHERE {condicion1}={valor1}"""
 			self.cursor.execute(sql)
 			rows=self.cursor.fetchall()			
 			return rows
@@ -89,6 +132,20 @@ class Consulta(object):
 			rows=self.cursor.fetchall()			
 			return rows
 		except Exception as e:
+			print(e)
+
+	def consulta_General(self,fechai,fechaf):
+		try:
+			rows=[]
+			sql=f"""SELECT M.DNI,M.GRUPO_FACTOR,M.RPM,M.HTA,M.ITU3_TRIMESTRE,M.DOSIS_ITU,M.CPN,M.OBSERVACION,P.PROCEDENCIA,P.H_INGRESO_SOP, P.H_EGRESO_SOP,P.H_INGRESO_SALAP,
+			P.tipo_Parto,P.MOTIVOCESARIA,A.HCL,A.CNV,A.T_PINZA,A.CONTAC_PRECOZ,A.INI_LME AS LME,A.CONTAC_PAPACANGURO,A.PESO,A.TALLA,A.PC,A.PT,A.PA,A.PB,A.EX_FI,A.FUR,A.APGAR_1,A.APGAR_5,A.APGAR_10,
+			A.TEMPERATURA,A.PROF_OCULAR,A.VIT_K,A.CLASF_NUTRICIONAL,A.L_AMNIOTICO,A.KRISTELLER,A.MECONIO,A.ORINA,A.ASFIXIA,A.DESTINO_RN,A.OBS_RN,A.GRUPO_FACTOR AS GRUPORN,A.H_EGRESO_AIRN,A.Fecha_Nacimiento,A.INTERCONSULTA,A.RESP_MEDICO_INTERCONSULTA,
+			RA.ENFERMERA,RA.TEC_ENFERMERA,RA.MEDICO,RA.OBSTETRA FROM MADRE AS M INNER JOIN AIR AS A ON M.IDMADRE=A.IDMADRE INNER JOIN PARTO AS P ON M.IDMADRE=P.IDMADRE 
+			INNER JOIN RES_ATENCION AS RA ON A.Id_AIR=RA.Id_AIR WHERE A.Fecha_Nacimiento BETWEEN '{fechai}' AND '{fechaf}'"""
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
 			print(e)	
 
 	def Update_Tabla(self,Tabla,variable,valorVariable,condicion,valor):
@@ -96,6 +153,46 @@ class Consulta(object):
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount
+
+	def Update_DataTables(self,Tabla,datos,condicion,valorcondicion):
+		try:
+			obj_conectar=conect_bd.Conexion_Triaje()
+			obj_conectar.ejecutar_conn()
+			cursor=obj_conectar.get_cursor()
+			sql=f"UPDATE {Tabla} SET "
+			sql1=""
+			for clave,valor in datos.items():
+				sql1=sql1+f"{clave}={valor}, "
+			
+			sql=sql+sql1[:-2]+f" WHERE {condicion}={valorcondicion}"
+				
+			cursor.execute(sql)
+			cursor.commit()
+			cursor.close()
+			return cursor.rowcount
+		except pyodbc.Error as error:
+			print(">",error)
+		finally:
+			obj_conectar.close_conection()
+
+
+
+	def insertDataTable(self,Tabla,lista,valores):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			lista1=','.join(lista)			
+			sql=f"INSERT INTO {Tabla} ({lista1}) values{valores} "		
+			cursor.execute(sql)
+			cursor.commit()
+			cursor.close()
+			return cursor.rowcount
+		except pyodbc.Error as error:
+			print(">",error)
+		finally:
+			obj_conectar.close_conection()
+		
 
 	def Insert_AIRN(self,datos,fechaN,iduser):
 		nro=0
@@ -105,6 +202,7 @@ class Consulta(object):
 			nro=1
 		else:
 			nro=nro+1
+
 		try:
 
 			sql=f"""INSERT INTO AIR VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]},{datos[7]},
@@ -116,11 +214,27 @@ class Consulta(object):
 		except Exception as e:
 			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
 
+	def deleteTable(self,Tabla,campo,idData):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""DELETE FROM {Tabla} WHERE {campo}={idData}"""
+			cursor.execute(sql)
+			cursor.commit()
+			nro=cursor.rowcount
+			cursor.close()
+			return nro
+		except Exception as e:
+			messagebox.showerror("Error",e)
+		finally:
+			obj_conectar.close_conection()
+
 	def Insert_AIRNObservacion(self,datos):
 
 		try:
-			sql=f"""INSERT INTO OBSERVACIONAIRN(id_obs,Id_AIR,ID_ALOJAMIENTO,FECHAI,ESTADO) 
-			VALUES({datos[0]},{datos[1]},{datos[2]},(SELECT GETDATE()),{datos[3]})"""
+			sql=f"""INSERT INTO OBSERVACIONAIRN(id_obs,Id_AIR,ID_ALOJAMIENTO,FECHAI,FECHAS,ESTADO) 
+			VALUES({datos[0]},{datos[1]},{datos[2]},'{datos[3]}','{datos[4]}',{datos[5]})"""
 			self.cursor.execute(sql)
 			self.cursor.commit()
 			return self.cursor.rowcount
@@ -183,21 +297,6 @@ class Consulta(object):
 			return rows
 		except Exception as e:
 			print(e)
-			
-	def insert_Alojamiento(self,datos):
-		nro=0
-		IdRes=self.get_id('ALOJAMIENTO','ID_ALOJAMIENTO')
-		nro=IdRes[0].ID
-		if nro==None:
-			nro=1
-		else:
-			nro=nro+1
-		sql=f"""INSERT INTO ALOJAMIENTO(ID_ALOJAMIENTO,FECHA_ALTA,ALTA,FECHA_TAMIZAJE,HEMOGLOBINA,DR_RESPONSABLE,OBSERVACION,Id_AIR) 
-		VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]})"""		
-		self.cursor.execute(sql)
-		self.cursor.commit()
-		return self.cursor.rowcount
-
 
 	def Report_General(self,desde,hasta):
 		rows=[]
@@ -211,6 +310,16 @@ class Consulta(object):
 		try:
 			rows=[]
 			sql=f"""SELECT * FROM AIR AS A INNER JOIN MADRE AS M ON A.IDMADRE=M.IDMADRE INNER JOIN PARTO AS P ON M.IDMADRE=P.IDMADRE AND A.Id_AIR={id_air}"""
+			self.cursor.execute(sql)
+			rows=self.cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
+
+	def consulta_datosAirDX(self,id_air):
+		try:
+			rows=[]
+			sql=f"""SELECT * FROM DXAIRN AS DX INNER JOIN CIE AS C ON DX.CODCIE=C.CODCIE WHERE DX.Id_AIR={id_air}"""
 			self.cursor.execute(sql)
 			rows=self.cursor.fetchall()			
 			return rows
