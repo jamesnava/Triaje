@@ -340,7 +340,9 @@ class queryGalen(object):
 
 		try:
 			rows=[]
-			sql=f"""SELECT PrimerNombre,ApellidoPaterno,ApellidoMaterno,NroHistoriaClinica,FechaNacimiento FROM Pacientes WHERE NroHistoriaClinica='{hcl}'"""
+			#sql=f"""SELECT PrimerNombre,ApellidoPaterno,ApellidoMaterno,NroHistoriaClinica,FechaNacimiento FROM Pacientes WHERE NroHistoriaClinica='{hcl}'"""
+			sql=f"""SELECT P.PrimerNombre,P.ApellidoPaterno,P.ApellidoMaterno,P.NroHistoriaClinica,P.FechaNacimiento, TS.Descripcion FROM Pacientes as P INNER JOIN TiposSexo AS TS ON 
+			P.IdTipoSexo=TS.IdTipoSexo WHERE P.NroHistoriaClinica='{hcl}'"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
 			

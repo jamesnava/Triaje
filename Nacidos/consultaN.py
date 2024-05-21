@@ -207,7 +207,7 @@ class Consulta(object):
 
 			sql=f"""INSERT INTO AIR VALUES({nro},'{datos[0]}','{datos[1]}','{datos[2]}','{datos[3]}','{datos[4]}','{datos[5]}',{datos[6]},{datos[7]},
 			{datos[8]},{datos[9]},{datos[10]},{datos[11]},{datos[12]},{datos[13]},{datos[14]},{datos[15]},{datos[16]},{datos[17]},'{datos[18]}','{datos[19]}',
-			'{datos[20]}','{datos[21]}','{datos[22]}','{datos[23]}','{datos[24]}','{datos[25]}','{datos[26]}','{datos[27]}','{datos[28]}','{datos[29]}','{datos[30]}',0,'{fechaN}',0,{iduser},{datos[31]},'{datos[32]}','{datos[33]}')"""
+			'{datos[20]}','{datos[21]}','{datos[22]}','{datos[23]}','{datos[24]}','{datos[25]}','{datos[26]}','{datos[27]}','{datos[28]}','{datos[29]}','{datos[30]}',0,'{fechaN}',0,{iduser},{datos[31]},'{datos[32]}','{datos[33]}','{datos[34]}')"""
 			self.cursor.execute(sql)
 			self.cursor.commit()
 			return self.cursor.rowcount,nro
@@ -235,12 +235,13 @@ class Consulta(object):
 		try:
 			sql=f"""INSERT INTO OBSERVACIONAIRN(id_obs,Id_AIR,ID_ALOJAMIENTO,FECHAI,FECHAS,ESTADO) 
 			VALUES({datos[0]},{datos[1]},{datos[2]},'{datos[3]}','{datos[4]}',{datos[5]})"""
+			
 			self.cursor.execute(sql)
 			self.cursor.commit()
 			return self.cursor.rowcount
 			
 		except Exception as e:
-			messagebox.showerror("Error",f"No se pudo insertar {e} \n se requiere llenar todos los campos!!")
+			messagebox.showerror("Error",f"No se pudo insertar {e}!!")
 
 	def Insert_AIRNObservacionDX(self,datos):		
 		try:
@@ -298,10 +299,11 @@ class Consulta(object):
 		except Exception as e:
 			print(e)
 
-	def Report_General(self,desde,hasta):
+	def Report_GeneralRN(self,desde,hasta):
 		rows=[]
-		sql=f"""SELECT * FROM ALOJAMIENTO AS AL INNER JOIN AIR AS A ON AL.Id_AIR=A.Id_AIR INNER JOIN MADRE
-		 AS M ON M.IDMADRE=A.IDMADRE INNER JOIN PARTO AS PA ON PA.IDMADRE=M.IDMADRE AND AL.FECHA_ALTA BETWEEN '{desde}' AND '{hasta}' """
+		sql=f"""SELECT A.Id_AIR,A.HCL,A.CNV,A.Fecha_Nacimiento,A.PESO,A.TALLA,M.EGESTACIONAL,M.DNI,P.tipo_Parto 
+		FROM MADRE AS M INNER JOIN AIR AS A ON M.IDMADRE=A.IDMADRE INNER JOIN PARTO AS P ON P.IDMADRE=M.IDMADRE
+		WHERE A.Fecha_Nacimiento BETWEEN '{desde}' AND '{hasta}'"""
 		self.cursor.execute(sql)
 		rows=self.cursor.fetchall()
 		return rows

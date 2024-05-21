@@ -43,65 +43,138 @@ class Reporte():
 		obj_ConsultaGalen=queryGalen()
 		fechaI=self.fechaDesde.get_date()
 		fechaF=self.fechaHasta.get_date()
-		rows=obj_consulta.Report_General(fechaI,fechaF)
+
+		rows=obj_consulta.Report_GeneralRN(fechaI,fechaF)
 		wb=Workbook()
 		sheet=wb.active
-		sheet.merge_cells('A1:K1')		
+		sheet.merge_cells('A1:T1')		
 		sheet['A1']=f"REGISTRO DE SEGUIMIENTO DE RECIEN NACIDOS CON ALTA HOSPITALARIA - {str(fechaF).split('-')[0]}"
 		sheet['A1'].alignment=Alignment(horizontal="center")
 		sheet['A1'].border=self.borde_caja
 
-		sheet.merge_cells('L1:N1')
-		sheet['L1']="Desde: "+str(fechaI)+" -  Hasta: "+str(fechaF) 
+		sheet.merge_cells('U1:V1')
+		sheet['U1']="Desde: "+str(fechaI)+" -  Hasta: "+str(fechaF) 
 
+		sheet.column_dimensions['A'].width = 8
+		sheet.merge_cells('A2:A3')
 		sheet['A2']="Nro"
-		sheet['B2']="HCL"
-		sheet['C2']="COD CNV"
-		sheet['D2']="EE.SS DE NACIMIENTO"
-		sheet.column_dimensions['E'].width = 20
-		sheet['E2']="EE.SS DE ORIGEN"
-		sheet.column_dimensions['F'].width = 30
-		sheet['F2']="NOMBRES Y APELLIDOS DE RN"
-		sheet.column_dimensions['G'].width = 15
-		sheet['G2']="FECHA DE NACIMIENTO"
-		sheet.column_dimensions['H'].width = 7
-		sheet['H2']="HOSPITALIZADO"
-		sheet.column_dimensions['I'].width = 10
-		sheet['I2']="FECHA DE ALTA"
 
-		sheet['J2']="RN CON TAMIZAJE NEONATAL"
-		sheet.column_dimensions['K'].width = 30
-		sheet['K2']="NOMBRES Y APELLIDOS DE LA MADRE"
-		sheet['L2']="Nro DE CELULAR FAMILIARES"
-		sheet.column_dimensions['M'].width = 30
-		sheet['M2']="RESPONSABLES DEL ALTA RN"
-		sheet.column_dimensions['N'].width = 30
-		sheet['N2']="OBSERVACION"
-		n=3
+		sheet.column_dimensions['B'].width = 8
+		sheet.merge_cells('B2:B3')
+		sheet['B2']="HCL"
+
+		sheet.column_dimensions['C'].width = 30
+		sheet.merge_cells('C2:C3')
+		sheet['C2']="Nombres y Apellidos RN"
+
+
+		sheet.column_dimensions['D'].width = 15
+		sheet.merge_cells('D2:D3')
+		sheet['D2']="Fecha Nacimiento"
+
+		sheet.column_dimensions['E'].width = 10
+		sheet.merge_cells('E2:E3')
+		sheet['E2']="DNI RN"	
+
+		
+		sheet.column_dimensions['F'].width = 12
+		sheet.merge_cells('F2:F3')
+		sheet['F2']="SEXO"
+
+		sheet.column_dimensions['G'].width = 8
+		sheet.merge_cells('G2:G3')
+		sheet['G2']="PESO RN"
+
+		sheet.column_dimensions['H'].width = 8
+		sheet.merge_cells('H2:H3')
+		sheet['H2']="TALLA RN"
+
+		sheet.column_dimensions['I'].width = 10
+		sheet.merge_cells('I2:I3')
+		sheet['I2']="EDAD GESTACIONAL"
+
+		sheet.merge_cells('J2:J3')
+		sheet['J2']="HB RN"
+
+		sheet.merge_cells('K2:M2')
+		sheet['K2']="CONDICION RN"
+
+		sheet['K3']="RNAT"		
+		sheet['L3']="RNPT"		
+		sheet['M3']="BPN"
+
+		sheet.merge_cells('N2:N3')	
+		sheet['N2']="MELLIZOS"
+
+		sheet.merge_cells('O2:O3')	
+		sheet['O2']="FECHA TAMIZAJE NEONATAL"		
+
+		sheet.merge_cells('P2:P3')	
+		sheet['P2']="TIPO DE SEGURO"
+
+		sheet.column_dimensions['Q'].width = 30
+		sheet.merge_cells('Q2:Q3')	
+		sheet['Q2']="NOMBRE DE LA MADRE"
+
+		sheet.column_dimensions['R'].width = 20
+		sheet.merge_cells('R2:R3')	
+		sheet['R2']="PROCEDENCIA"
+
+		sheet.column_dimensions['S'].width = 15
+		sheet.merge_cells('S2:S3')	
+		sheet['S2']="NRO CELULAR"
+
+		sheet.column_dimensions['T'].width = 9
+		sheet.merge_cells('T2:T3')	
+		sheet['T2']="TIPO DE PARTO"
+
+		sheet.merge_cells('U2:U3')	
+		sheet['U2']="LUGAR DE NACIMIENTO"	
+
+
+		n=4
 		nro=1
 		for valor in rows:
-			hclN=valor.HCL
-			dniMadre=valor.DNI
-			dniMedicoResponsable=valor.DR_RESPONSABLE			
-			rowsGalenNino=obj_ConsultaGalen.query_PacienteXHCL(hclN)			
-			rows_Madre=obj_ConsultaGalen.query_DatosPaciente(dniMadre)
-			#DATOS MEDICO
-			rows_Medico=obj_ConsultaGalen.query_EmpleadoDNI(dniMedicoResponsable)
-					
+
+			HCL=valor.HCL						
+			rows_Madre=obj_ConsultaGalen.query_Paciente(valor.DNI)					
 			sheet['A'+str(n)]=nro
-			sheet['B'+str(n)]=hclN
-			sheet['C'+str(n)]=valor.CNV
-			sheet['D'+str(n)]=""
-			sheet['E'+str(n)]=valor.PROCEDENCIA
-			sheet['F'+str(n)]=rowsGalenNino[0].PrimerNombre+" "+rowsGalenNino[0].ApellidoPaterno+" "+rowsGalenNino[0].ApellidoMaterno
-			sheet['G'+str(n)]=rowsGalenNino[0].FechaNacimiento
-			sheet['H'+str(n)]=""
-			sheet['I'+str(n)]=valor.FECHA_ALTA
-			sheet['J'+str(n)]=""
-			sheet['K'+str(n)]=rows_Madre[0].PrimerNombre+" "+rows_Madre[0].ApellidoPaterno+" "+rows_Madre[0].ApellidoMaterno
-			sheet['L'+str(n)]=rows_Madre[0].Telefono
-			sheet['M'+str(n)]=rows_Medico[0].Nombres+" "+rows_Medico[0].ApellidoPaterno+" "+rows_Medico[0].ApellidoMaterno
-			sheet['N'+str(n)]=valor.OBS_RN
+			sheet['B'+str(n)]=HCL
+			rowsGalenNino=obj_ConsultaGalen.query_PacienteXHCL(HCL)
+			if rowsGalenNino:
+				sheet['C'+str(n)]=rowsGalenNino[0].PrimerNombre+" "+rowsGalenNino[0].ApellidoPaterno+" "+rowsGalenNino[0].ApellidoMaterno
+				sheet['F'+str(n)]=rowsGalenNino[0].Descripcion
+
+			peso=valor.PESO
+			sheet['D'+str(n)]=valor.Fecha_Nacimiento
+			sheet['E'+str(n)]=valor.CNV			
+			sheet['G'+str(n)]=peso
+			sheet['H'+str(n)]=valor.TALLA
+			edadGesta=valor.EGESTACIONAL
+			sheet['I'+str(n)]=edadGesta
+
+			if peso<2500:
+				sheet['M'+str(n)]="SI"
+
+			if not edadGesta==None:
+				if int(edadGesta)<42:
+					sheet['K'+str(n)]="SI"
+					sheet['L'+str(n)]="NO"
+				else:
+					sheet['K'+str(n)]="NO"
+					sheet['L'+str(n)]="SI"
+
+			idair=valor.Id_AIR
+			rowsAlojamiento=obj_consulta.consulta_Tabla1("ALOJAMIENTO","Id_AIR",idair)
+			if rowsAlojamiento:
+				sheet['J'+str(n)]=rowsAlojamiento[0].HEMOGLOBINA
+				sheet['O'+str(n)]=rowsAlojamiento[0].FECHA_TAMIZAJE
+			if rows_Madre:
+				sheet['Q'+str(n)]=rows_Madre[0].PrimerNombre+" "+rows_Madre[0].ApellidoPaterno+" "+rows_Madre[0].ApellidoMaterno
+				sheet['R'+str(n)]=rows_Madre[0].Nombre
+				sheet['S'+str(n)]=rows_Madre[0].Telefono
+			sheet['T'+str(n)]=valor.tipo_Parto			
+			
 			nro=nro+1
 			n=n+1
 

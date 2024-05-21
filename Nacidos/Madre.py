@@ -789,34 +789,42 @@ class MadreN(object):
 			self.time_EgresoAIRN.configure_separator(bg="#404040",fg="#fff")
 			self.time_EgresoAIRN.grid(row=7,column=10,pady=10)
 
+			
+			label=Label(self.TopAIRN,text="Tipo de Seguro",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
+			label.grid(row=8,column=1,pady=10)
+			self.comboSeguro=ttk.Combobox(self.TopAIRN,values=['SIS','SALUDPOL','PARTICULAR','SOAT','ESSALUD'])
+			self.comboSeguro.grid(row=8,column=2)
+			self.comboSeguro.current(0)
+
 			self.estadoInterconsulta=BooleanVar()
 			checkInterconsulta=Checkbutton(self.TopAIRN,text="Interconsulta",bg="#273C6A",fg="#9DC2A7",font=('Arial',10,'bold'),variable=self.estadoInterconsulta)
 			
-			checkInterconsulta.grid(row=8,column=1)
+			checkInterconsulta.grid(row=9,column=1)
 
 			label=Label(self.TopAIRN,text="MED RESPONSABLE",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
-			label.grid(row=8,column=2,pady=10)
+			label.grid(row=9,column=2,pady=10)
 			self.AEntry_MedicoInterconsulta=ttk.Entry(self.TopAIRN,state='disabled')
-			self.AEntry_MedicoInterconsulta.grid(row=8,column=3,pady=10,columnspan=2)
+			self.AEntry_MedicoInterconsulta.grid(row=9,column=3,pady=10,columnspan=2)
 			self.AEntry_MedicoInterconsulta.bind('<Return>',lambda event:self.Search_Personal(event,"DOCTORINTERCONSULTA"))
 			checkInterconsulta.configure(command=lambda:self.EventoCheckInter(self.estadoInterconsulta,self.AEntry_MedicoInterconsulta))
+			
 
 			self.estadoHospitalizado=BooleanVar()
 			check=Checkbutton(self.TopAIRN,text="Hospitalizado",bg="#273C6A",fg="#9DC2A7",font=('Arial',10,'bold'),variable=self.estadoHospitalizado)
 			check.configure(command=lambda:self.EventoCheckHospitalizados(self.estadoHospitalizado))
-			check.grid(row=9,column=5)
+			check.grid(row=10,column=5,pady=5)
 
 			style = ttk.Style()
 			style.configure("btnAdd.TButton",background="#9A4419",font=("Helvetica", 12))
 
 			self.ButtonAddCIE=ttk.Button(self.TopAIRN,text="Agregar DX",style="btnAdd.TButton",cursor="hand2",state="disabled")
-			self.ButtonAddCIE.grid(row=10,column=4,pady=10)
+			self.ButtonAddCIE.grid(row=11,column=4,pady=10)
 			self.ButtonAddCIE['command']=self.Top_searchCie
 			
 			style = ttk.Style()
 			style.configure("btnClose.TButton",background="red",font=("Helvetica", 12))
 			self.ButtonEliminaCIE=ttk.Button(self.TopAIRN,text="Quitar Dx",style="btnClose.TButton",cursor="hand2",state="disabled")
-			self.ButtonEliminaCIE.grid(row=10,column=6,pady=10)
+			self.ButtonEliminaCIE.grid(row=11,column=6,pady=10)
 			self.ButtonEliminaCIE['command']=lambda :self.eliminarSeleccionTable(self.table_DX)
 
 			self.table_DX=ttk.Treeview(self.TopAIRN,columns=('#1','#2'),show='headings',height=5)
@@ -824,20 +832,20 @@ class MadreN(object):
 			self.table_DX.column("#1",width=100,anchor="w",stretch='NO')
 			self.table_DX.heading("#2",text="DESCRIPCION")
 			self.table_DX.column("#2",width=400,anchor="w",stretch='NO')								
-			self.table_DX.grid(row=11,column=1,padx=10,pady=2,columnspan=20)
+			self.table_DX.grid(row=12,column=1,padx=10,pady=2,columnspan=20)
 
 
 			style = ttk.Style()
 			style.configure("btnAcept.TButton",background="green",font=("Helvetica", 12))
 
 			ButtonAddAIRN=ttk.Button(self.TopAIRN,text="Agregar",style="btnAcept.TButton",cursor="hand2")
-			ButtonAddAIRN.grid(row=12,column=4,pady=10)
+			ButtonAddAIRN.grid(row=13,column=4,pady=10)
 			ButtonAddAIRN['command']=self.insertAIRN
 
 			style = ttk.Style()
 			style.configure("btnClose.TButton",background="red",font=("Helvetica", 12))
 			ButtonCloseAIRN=ttk.Button(self.TopAIRN,text="Cerrar",style="btnClose.TButton",cursor="hand2")
-			ButtonCloseAIRN.grid(row=12,column=6,pady=10)
+			ButtonCloseAIRN.grid(row=13,column=6,pady=10)
 			ButtonCloseAIRN['command']=self.TopAIRN.destroy
 
 
@@ -1006,10 +1014,10 @@ class MadreN(object):
 		datos.append(1 if self.estadoInterconsulta.get() else 0)
 		self.AEntry_MedicoInterconsulta.configure(state='normal')
 		datos.append(" " if len(self.AEntry_MedicoInterconsulta.get())<1 else self.AEntry_MedicoInterconsulta.get())		
-		#datos.append
+		datos.append(self.comboSeguro.get())
 		self.AEntry_Datos['state']='normal'
 		if len(self.AEntry_Datos.get())>0:						
-			if len(datos)==34:
+			if len(datos)==35:
 				fecha=str(self.Fecha_NacimientoRN)[:10]
 				if len(self.table_DX.get_children()) or not self.estadoHospitalizado.get():					
 					numero,codigoAIR=self.obj_consultaN.Insert_AIRN(datos,fecha,self.iduser)
@@ -1076,6 +1084,8 @@ class MadreN(object):
 		self.menu=Menu(frameM,tearoff=0)
 		self.menu.add_command(label="Ingresar Pacientes",command=obj_alojamiento.TopIngresoAlojamiento)
 		self.menu.add_command(label="Eliminar",command=lambda:obj_alojamiento.EliminarDataTable(self.table_Alojamiento))
+
+		#self.Button
 		
 	def llenar_TAlojamiento(self):
 		self.borrarTabla(self.table_Alojamiento)
@@ -1418,14 +1428,14 @@ class MadreN(object):
 			fechasalida=FechaEgreso.get_date()
 			horaEgreso="{}:{}".format(*self.time_OEngreso.time())
 
-			fechaGI=str(fechaingreso)+" "+str(horaIngreso)+":00"
-			fechaGS=str(fechasalida)+" "+str(horaEgreso)+":00"
+			fechaGI=str(fechaingreso)+"T"+str(horaIngreso)+":00.00"
+			fechaGS=str(fechasalida)+"T"+str(horaEgreso)+":00.00"
 
-			FI=datetime.strptime(fechaGI, '%Y-%m-%d %H:%M:%S')
-			FS=datetime.strptime(fechaGS, '%Y-%m-%d %H:%M:%S')
+			#FI=datetime.strptime(fechaGI, '%Y-%m-%d %H:%M:%S')
+			#FS=datetime.strptime(fechaGS, '%Y-%m-%d %H:%M:%S')
 		
 			#estado=0
-			comprobar=self.obj_consultaN.Insert_AIRNObservacion([nro,idAirn,0,FI,FS,0])
+			comprobar=self.obj_consultaN.Insert_AIRNObservacion([nro,idAirn,0,fechaGI,fechaGS,0])
 			if comprobar:
 				for child in self.table_DxObservacion.get_children():
 					get_idMaxDx=self.obj_consultaN.get_id("DXOBSERVACIONAIRN","Id_DxObs")

@@ -6,4 +6,6 @@ config_Triaje.ini
 build
 dist
 old_version.rar
-
+old.rar
+main.spec
+general.xlsx
