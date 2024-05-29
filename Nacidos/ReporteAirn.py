@@ -152,17 +152,19 @@ class Reporte():
 			sheet['H'+str(n)]=valor.TALLA
 			edadGesta=valor.EGESTACIONAL
 			sheet['I'+str(n)]=edadGesta
+			sheet['P'+str(n)]=valor.FINANCIAMIENTO
 
 			if peso<2500:
 				sheet['M'+str(n)]="SI"
+			else:
+				sheet['K'+str(n)]="SI"
 
 			if not edadGesta==None:
-				if int(edadGesta)<42:
-					sheet['K'+str(n)]="SI"
-					sheet['L'+str(n)]="NO"
-				else:
-					sheet['K'+str(n)]="NO"
+				if int(edadGesta)<37:					
 					sheet['L'+str(n)]="SI"
+				else:
+					
+					sheet['L'+str(n)]="NO"
 
 			idair=valor.Id_AIR
 			rowsAlojamiento=obj_consulta.consulta_Tabla1("ALOJAMIENTO","Id_AIR",idair)

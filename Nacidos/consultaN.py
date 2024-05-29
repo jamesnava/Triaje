@@ -301,7 +301,7 @@ class Consulta(object):
 
 	def Report_GeneralRN(self,desde,hasta):
 		rows=[]
-		sql=f"""SELECT A.Id_AIR,A.HCL,A.CNV,A.Fecha_Nacimiento,A.PESO,A.TALLA,M.EGESTACIONAL,M.DNI,P.tipo_Parto 
+		sql=f"""SELECT A.Id_AIR,A.HCL,A.CNV,A.Fecha_Nacimiento,A.PESO,A.TALLA,M.EGESTACIONAL,M.DNI,P.tipo_Parto,A.FINANCIAMIENTO 
 		FROM MADRE AS M INNER JOIN AIR AS A ON M.IDMADRE=A.IDMADRE INNER JOIN PARTO AS P ON P.IDMADRE=M.IDMADRE
 		WHERE A.Fecha_Nacimiento BETWEEN '{desde}' AND '{hasta}'"""
 		self.cursor.execute(sql)
