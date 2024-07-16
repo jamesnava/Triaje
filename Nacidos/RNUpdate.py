@@ -235,7 +235,9 @@ class Rn(object):
 			tabla.delete(item)
 
 	def fillWidget(self,idair):
+		
 		rows=self.obj_consultaN.consulta_Tabla1("AIR","Id_AIR",idair)
+
 		for val in rows:
 			self.AEntry_HCL.insert("end",val.HCL)
 			self.AEntry_HCL.configure(state="readonly")			

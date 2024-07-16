@@ -40,13 +40,7 @@ class CAlojamiento(object):
 		label=Label(datosmadre,text="EE.SS Origen: ")
 		label.grid(row=2,column=3,padx=10)
 		entry_EstaOrigen=ttk.Entry(datosmadre)
-		entry_EstaOrigen.grid(row=2,column=4,pady=10)
-
-		#label=Label(datosmadre,text="E. Gest.(meses): ")
-		#label.grid(row=3,column=1)
-		#entry_EdadG=ttk.Entry(datosmadre)
-		#entry_EdadG.bind("<KeyRelease>",lambda event:self.validarDigit(event,entry_EdadG))
-		#entry_EdadG.grid(row=3,column=2,pady=10)
+		entry_EstaOrigen.grid(row=2,column=4,pady=10)		
 
 		datosRN=LabelFrame(TopIngreso,text="Datos RN")
 		datosRN.grid(row=2,column=0,columnspan=4)

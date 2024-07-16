@@ -131,8 +131,17 @@ class Perfiles(object):
 		check=Checkbutton(marcoAlojamiento,text="Listar Paciente",variable=self.ListarPaciente)
 		check.grid(row=1,column=2,pady=5,padx=5)
 
+		marcoEstadistica=LabelFrame(self.Frame_Perfil,text="Estadisticas",borderwidth=2, relief="solid",width=int(width*0.5),height=int(height*0.4),bg="#949BAA")
+		marcoEstadistica.grid(row=7,column=1)
+
+		self.EstadisticaTriaje=BooleanVar()
+		check=Checkbutton(marcoEstadistica,text="Estadisticas Triaje",variable=self.EstadisticaTriaje)
+		check.grid(row=1,column=1,pady=5,padx=5)
+
+	
+
 		addbutton=ttk.Button(self.Frame_Perfil,text="Aceptar",cursor="hand2")
-		addbutton.grid(row=7,column=1,pady=10,padx=10)
+		addbutton.grid(row=8,column=1,pady=10,padx=10)
 		addbutton['command']=self.recuperarCheck
 
 	def EventTreeView(self,event):
@@ -167,7 +176,8 @@ class Perfiles(object):
 		'IncidenciaCita':int(self.checkIncidenciasTriajeT.get()),'WhatsAppCita':int(self.checkWhatsApp.get()),'ProduccionHis':int(self.produccionhis.get()),
 		'MReporteHis':int(self.ReporteHis.get()),'MDataHis':int(self.dataHis.get()),'AtencionAirn':int(self.Airn.get()),'NacidoAlojamiento':int(self.Alojamiento.get()),'ReporteNacidos':int(self.ReporteNacido.get()),
 		'DatosGeneralesNeo':int(self.DatosGeneralesNeo.get()),'IntermediosNeo':int(self.IntermedioNeo.get()),'PatologicosNeo':int(self.PatologicosNeo.get())
-		,'RecuperacionNeo':int(self.RecuperacionNeo.get()),'UcinNeo':int(self.Ucinneo.get()),'PacienteInsertar':int(self.IPaciente.get()),'PacienteListar':int(self.ListarPaciente.get()),'Tamizaje':int(self.tamizaje.get())}
+		,'RecuperacionNeo':int(self.RecuperacionNeo.get()),'UcinNeo':int(self.Ucinneo.get()),'PacienteInsertar':int(self.IPaciente.get()),'PacienteListar':int(self.ListarPaciente.get()),'Tamizaje':int(self.tamizaje.get()),
+		'EstadisticaTriaje':int(self.EstadisticaTriaje.get())}
 		
 		
 		if self.table_Perfiles.selection():

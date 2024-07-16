@@ -8,6 +8,24 @@ class Consulta(object):
 		self.obj_conectar.ejecutar_conn()
 		self.cursor=self.obj_conectar.get_cursor()
 
+	def get_IdentificadorTable(self,Tabla,condicionName,condicionValor,idname):
+
+		try:
+			obj_conectar=conect_bd.Conexion_Triaje()
+			obj_conectar.ejecutar_conn()
+			cursor=obj_conectar.get_cursor()
+			rows=[]
+			sql=f"""SELECT {idname} FROM {Tabla} WHERE {condicionName}={condicionValor}"""
+			
+			cursor.execute(sql)
+			rows=cursor.fetchall()			
+			return rows
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+
 	def get_id(self,Tabla,idd):		
 		try:
 			rows=[]
@@ -17,6 +35,27 @@ class Consulta(object):
 			return rows
 		except Exception as e:
 			print(e)
+			
+	def Update_DataTables(self,Tabla,datos,condicion,valorcondicion):
+		try:
+			obj_conectar=conect_bd.Conexion_Triaje()
+			obj_conectar.ejecutar_conn()
+			cursor=obj_conectar.get_cursor()
+			sql=f"UPDATE {Tabla} SET "
+			sql1=""
+			for clave,valor in datos.items():
+				sql1=sql1+f"{clave}={valor}, "
+			
+			sql=sql+sql1[:-2]+f" WHERE {condicion}={valorcondicion}"
+			
+			cursor.execute(sql)
+			cursor.commit()
+			cursor.close()
+			return cursor.rowcount
+		except pyodbc.Error as error:
+			print(">",error)
+		finally:
+			obj_conectar.close_conection()
 
 	def InsertarDatosGenerales(self,HCLRN,DNIMADRE,EDADGESTA,LUGARNACIMIENTO,TIPOPARTO,PROCEDENCIA):
 
@@ -32,6 +71,24 @@ class Consulta(object):
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount,nro
+
+	def insertDataTable(self,Tabla,lista,valores):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			lista1=','.join(lista)			
+			sql=f"INSERT INTO {Tabla} ({lista1}) values{valores} "
+			#print(sql)	
+			cursor.execute(sql)
+			cursor.commit()
+			cursor.close()
+			return cursor.rowcount
+		except pyodbc.Error as error:
+			print(">",error)
+		finally:
+			obj_conectar.close_conection()
+
 
 	def InsertarINGRESO(self,Id_DP,Id_DESTINO):
 		rowsId=self.get_id('INGRESO','ID_INGRESO')
@@ -67,16 +124,20 @@ class Consulta(object):
 
 	def consulta_Ingresos(self,servicio):
 		rows=[]
-		sql=f"""SELECT * FROM INGRESO AS INGRE INNER JOIN DATOS_PACIENTE AS DP 
-		ON INGRE.Id_DP=DP.Id_DP AND INGRE.ESTADOI=0 AND INGRE.ID_DESTINO={servicio}"""
+		sql=f"""SELECT * FROM MADRE AS M 
+		INNER JOIN RNNEO AS RN ON M.IDMADRE=RN.IDMADRE
+		 INNER JOIN DATOS_INGRESO AS DI ON RN.ID_INGRESO=DI.ID_INGRESO
+		  WHERE DI.ID_DESTINO={servicio} AND DI.ESTADO=0"""
 		self.cursor.execute(sql)
 		rows=self.cursor.fetchall()
 		return rows
 
 	def consulta_XAlta(self,servicio):
 		rows=[]
-		sql=f"""SELECT * FROM INGRESO AS INGRE INNER JOIN DATOS_PACIENTE AS DP 
-		ON INGRE.Id_DP=DP.Id_DP AND (INGRE.ESTADOA=0 AND INGRE.ESTADOI=1) AND INGRE.ID_DESTINO={servicio}"""
+		sql=f"""SELECT * FROM MADRE AS M 
+				INNER JOIN RNNEO AS RN ON M.IDMADRE=RN.IDMADRE
+				INNER JOIN DATOS_INGRESO AS DI ON RN.ID_INGRESO=DI.ID_INGRESO
+		 		WHERE DI.ID_DESTINO={servicio} AND DI.ESTADO=1"""
 		self.cursor.execute(sql)
 		rows=self.cursor.fetchall()
 		return rows
@@ -136,12 +197,28 @@ class Consulta(object):
 			sql=f"""DELETE FROM {Table} WHERE {columnCondition}={valueCondition}"""
 			cursor.execute(sql)
 			cursor.commit()
-			return self.cursor.rowcount
+			return cursor.rowcount
 		except pyodbc.Error as e:			
 			return None
 		finally:
 			obj_conectar.close_conection()
-		
+
+	def QueryTabla(self,Table):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		rows=[]
+		try:
+			sql=f"""SELECT * FROM {Table}"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			cursor.close()
+			return rows
+		except pyodbc.Error as e:			
+			return None
+		finally:
+			obj_conectar.close_conection()
+
 
 	def get_LastIdQuery(self,tabla,Paramcolumna,Paramvalor,OutputColumn):
 		rows=[]
@@ -150,4 +227,19 @@ class Consulta(object):
 		rows=self.cursor.fetchall()
 		return rows
 
+	def query_cie10(self,descrip):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT * FROM CIE WHERE  CODCIE LIKE '{descrip}%' OR NOMBRE LIKE '{descrip}%'"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()			
+		except Exception as e:
+			raise e
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
 

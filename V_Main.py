@@ -70,6 +70,7 @@ class Ventana_Principal(object):
 		self.M_Nacidos=Menu(self.Barra_Menu,tearoff=False)
 		self.M_Neonatologia=Menu(self.Barra_Menu,tearoff=False)
 		self.M_Paciente=Menu(self.Barra_Menu,tearoff=False)
+		self.M_Estadistica=Menu(self.Barra_Menu,tearoff=False)
 
 		valorRows=self.obj_QueryTriaje.ConsultaAsignacion(idrol)
 		for val in valorRows:			
@@ -82,7 +83,7 @@ class Ventana_Principal(object):
 		self.Barra_Menu.add_cascade(label='Nacidos',menu=self.M_Nacidos)			
 		self.Barra_Menu.add_cascade(label='Neonatologia',menu=self.M_Neonatologia)			
 		self.Barra_Menu.add_cascade(label='Pacientes',menu=self.M_Paciente)				
-		
+		self.Barra_Menu.add_cascade(label='Estadisticas',menu=self.M_Estadistica)
 		#menu ayuda
 		self.M_Usuario=Menu(self.Barra_Menu,tearoff=False)
 		self.M_Usuario.add_command(label='Acerca de...',command=lambda:self.mensaje_Info('INFORMACION'))
@@ -175,22 +176,25 @@ class Ventana_Principal(object):
 		self.M_Neonatologia.add_command(label='DatosGenerales',command=self.Frame_DatosGenerales)
 
 	def IntermediosNeo(self):
-		self.M_Neonatologia.add_command(label='Intermedios',command=lambda :self.Frame_NeoServicios("INTERMEDIO"))
+		self.M_Neonatologia.add_command(label='Intermedios',command=lambda :self.Frame_NeoServicios(2))
 
 	def PatologicosNeo(self):
-		self.M_Neonatologia.add_command(label='Patologicos',command=lambda :self.Frame_NeoServicios("PATOLOGICO"))
+		self.M_Neonatologia.add_command(label='Patologicos',command=lambda :self.Frame_NeoServicios(4))
 
 	def RecuperacionNeo(self):
-		self.M_Neonatologia.add_command(label='Recuperacion Nutri.',command=lambda :self.Frame_NeoServicios("RECUPERACION N"))
+		self.M_Neonatologia.add_command(label='Recuperacion Nutri.',command=lambda :self.Frame_NeoServicios(5))
 
 	def UcinNeo(self):
-		self.M_Neonatologia.add_command(label='Ucin',command=lambda :self.Frame_NeoServicios("UCIN"))
+		self.M_Neonatologia.add_command(label='Ucin',command=lambda :self.Frame_NeoServicios(3))
 
 	def PacienteInsertar(self):
 		self.M_Paciente.add_command(label='Insertar',command=self.Agregar_Pacientes)
 
 	def PacienteListar(self):
 		self.M_Paciente.add_command(label='Listar pacientes',command=self.Listar_Pacientes)
+
+	def EstadisticaTriaje(self):
+		self.M_Estadistica.add_command(label='Estadisticas Triaje')
 
 	#########fin menues##############
 
@@ -209,7 +213,7 @@ class Ventana_Principal(object):
 		self.Frame_Intermedio.pack_propagate(False)
 		from Neonatologia import Neonatologia
 		obj_Neo=Neonatologia.DATOSGENERALES(self.Usuario,self.dni)
-		obj_Neo.Top_AddPaciente()
+		obj_Neo.Top_AddPaciente()		
 
 	def Frame_NeoServicios(self,servicio):
 		
@@ -217,12 +221,8 @@ class Ventana_Principal(object):
 		self.Frame_Intermedio.place(x=0,y=0)
 		self.Frame_Intermedio.pack_propagate(False)
 		
-		from Neonatologia import Servicios,consultaNeonatologia
-		obj_consulta=consultaNeonatologia.Consulta()
-		rowsConsulta=obj_consulta.get_codigo('DESTINO','NOMBRE_DESTINO',servicio)
-
-		ser=rowsConsulta[0].ID_DESTINO if rowsConsulta else None
-		obj_Neo=Servicios.Servicio(self.Usuario,self.dni,ser)
+		from Neonatologia import Servicios		
+		obj_Neo=Servicios.Servicio(self.Usuario,self.dni,servicio)
 		obj_Neo.Frame_Servicios(self.Frame_Intermedio,self.width,self.height)			
 
 	#FIN NEONATOLOGIA
@@ -366,7 +366,8 @@ class Ventana_Principal(object):
 		styl = ttk.Style()
 		#styl.configure('white.TSeparator', background='white')
 
-		etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='white',bg='#080E66',font=self.letra_leyenda)
+		etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='white',bg='#2AA3D0',font=self.letra_leyenda)
+		#etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='white',bg='#080E66',font=self.letra_leyenda)
 		etiqueta_Leyenda.grid(row=1,column=10,padx=5)
 		styl = ttk.Style()
 		#styl.configure('white.TSeparator', background='white')

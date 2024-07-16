@@ -4,10 +4,10 @@ from Consulta_Galen import queryGalen
 from Nacidos.consultaN import Consulta
 from tktimepicker import SpinTimePickerModern, SpinTimePickerOld
 from tktimepicker import constants
-#from tkcalendar import Calendar
+from tkinter import filedialog
 from tkcalendar import DateEntry
 from Consulta_Triaje import queryTriaje
-from tkcalendar import DateEntry
+#from tkcalendar import DateEntry
 from datetime import datetime
 from Util import util
 from Nacidos.Falojamiento import CAlojamiento
@@ -23,6 +23,7 @@ class MadreN(object):
 		self.usuario=usuario
 		self.timeDate=datetime.now().strftime("%H:%M:%S")			
 		self.btnHistorialphoto=PhotoImage(file ="img/flecha.png")
+		
 	def Frame_Madre(self,iduser):
 		self.iduser=iduser
 		style=ttk.Style()
@@ -157,7 +158,7 @@ class MadreN(object):
 		self.checkIntegra=BooleanVar()
 		check=ttk.Checkbutton(self.TopMadre,text="Íntegra",variable=self.checkIntegra)
 		check.grid(row=3,column=5,pady=5)
-		check.configure(command=self.validaRPM)
+		check.configure(command=lambda:util.validaEntry(self.checkIntegra,self.RPM))
 
 		label=Label(self.TopMadre,text="HTA")
 		label.grid(row=3,column=6,padx=5,pady=5)
@@ -199,13 +200,7 @@ class MadreN(object):
 		buttonAdd=ttk.Button(self.TopMadre,text="Cancelar")
 		buttonAdd.grid(row=6,column=5,pady=5)
 
-	def validaRPM(self):
-		if self.checkIntegra.get():
-			self.RPM.configure(state='disabled')
-		else:
-			self.RPM.configure(state='normal')
-			self.RPM.delete(0,"end")
-			
+				
 	def EntryRPMValidar(self,event,entry):
 		param=""
 		param=param+entry.get()
@@ -257,6 +252,7 @@ class MadreN(object):
 			comprobar=util.validarCampos(diccionario)
 			if comprobar:
 				nro=self.obj_consultaN.insertarMadre(dni,grupo,rpm,hta,itu3,ditu,cpn,observacion,self.usuario,'0',edadG)
+				
 				if nro:
 					messagebox.showinfo("Alerta","Se insertó correctamente!!")
 					self.TopMadre.destroy()
@@ -268,7 +264,7 @@ class MadreN(object):
 			messagebox.showerror("Error!!","Ingrese el DNI y presiona ENTER!!")
 
 	def llenar_MadreNacido(self):
-		self.borrarTabla(self.table_Airn)
+		util.borra_Table(self.table_Airn)
 		rows=self.obj_consultaN.consulta_TablaALL()
 		obj_Paciente=queryGalen()
 		for val in rows:
@@ -278,8 +274,8 @@ class MadreN(object):
 	
 
 	def llenar_TMadre(self):
-		self.borrarTabla(self.table_Madres)
-		rows=self.obj_consultaN.consulta_Tabla('MADRE','estadoAIRN','estadoPARTO',0,0)
+		util.borra_Table(self.table_Madres)
+		rows=self.obj_consultaN.consulta_IngresoLlenar('MADRE','estadoAIRN','estadoPARTO','CONTROLADOR',0,0,0)
 		obj_Paciente=queryGalen()
 		
 		for val in rows:
@@ -300,11 +296,7 @@ class MadreN(object):
 			if nacimiento=='Registrado':
 				self.buttonAIRN['state']='disabled'
 			else:
-				self.buttonAIRN['state']='normal'
-
-	def borrarTabla(self,tabla):		
-		for item in tabla.get_children():
-			tabla.delete(item)
+				self.buttonAIRN['state']='normal'	
 
 	def TopParto(self):
 		if self.table_Madres.selection():
@@ -401,8 +393,7 @@ class MadreN(object):
 		cesaria=""
 
 		if self.checkIngresoSala.get():
-			horaISO="NO"
-			#horaESO="NO"			
+			horaISO="NO"					
 			horaIPartos="{}:{}".format(*self.time_IPartos.time())
 		else:
 			horaISO="{}:{}".format(*self.time_Ingreso.time())
@@ -411,8 +402,7 @@ class MadreN(object):
 			horaIPartos="NO"
 
 		HoraNaciemiento="{}:{}".format(*self.time_Egreso.time())
-		##insertar....
-		#print(procedencia,self.id_madre,horaISO,horaESO,horaIPartos,tipoP)
+		
 
 		numero=self.obj_consultaN.insertParto(procedencia,self.id_madre,horaISO,HoraNaciemiento,horaIPartos,tipoP,cesaria)
 		
@@ -505,7 +495,11 @@ class MadreN(object):
 			self.Top_searchPersonal()
 		elif identificador=="DOCTORINTERCONSULTA":
 			self.personall="DOCTORINTERCONSULTA"
-			self.Top_searchPersonal()		
+			self.Top_searchPersonal()
+		elif identificador=="OBSERVACIONALOJAMIENTO":
+			self.personall="OBSERVACIONALOJAMIENTO"
+			self.Top_searchPersonal()
+
 			
 	def Top_searchPersonal(self):
 		self.TopGeneral=Toplevel()
@@ -540,7 +534,7 @@ class MadreN(object):
 	def buscar_DatosPersonales(self,event):
 		obj_Galen=queryGalen()
 		parametro=''
-		self.borrarTabla(self.table_General)
+		util.borra_Table(self.table_General)
 		if len(self.Entry_buscar_General.get())!=0:
 			parametro=parametro+self.Entry_buscar_General.get()
 			rows=obj_Galen.query_Empleado(parametro)
@@ -575,6 +569,12 @@ class MadreN(object):
 				self.AEntry_MedicoInterconsulta.delete(0,'end')
 				self.AEntry_MedicoInterconsulta.insert('end',self.table_General.item(self.table_General.selection()[0],option='values')[0])
 				self.AEntry_MedicoInterconsulta['state']="readonly"	
+				self.TopGeneral.destroy()
+			elif self.personall=="OBSERVACIONALOJAMIENTO":
+				self.AEntry_ResponsableObservacion['state']='normal'
+				self.AEntry_ResponsableObservacion.delete(0,'end')
+				self.AEntry_ResponsableObservacion.insert('end',self.table_General.item(self.table_General.selection()[0],option='values')[0])
+				self.AEntry_ResponsableObservacion['state']="readonly"	
 				self.TopGeneral.destroy()
 			else:
 				self.Entry_Enfermera['state']="normal"
@@ -767,18 +767,26 @@ class MadreN(object):
 			label.grid(row=7,column=1,pady=10)
 			self.AEntry_GRUPOF=ttk.Entry(self.TopAIRN,width=15)
 			self.AEntry_GRUPOF.grid(row=7,column=2,pady=10)
-			
+					
+
 
 			label=Label(self.TopAIRN,text="DESTINO RN:",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 			label.grid(row=7,column=3,pady=10)
-			self.AEntry_DESTINORN=ttk.Entry(self.TopAIRN,width=20)
-			self.AEntry_DESTINORN.grid(row=7,column=4,pady=10)
+
+			#self.AEntry_DESTINORN=ttk.Entry(self.TopAIRN,width=20)
+			#self.AEntry_DESTINORN.grid(row=7,column=4,pady=10)
 			#self.AEntry_DESTINORN.bind("<Return>",self.Top_searchServicios)
+			self.ACOMBO_DESTINORN=ttk.Combobox(self.TopAIRN,width=20,state="readonly")			
+			self.ACOMBO_DESTINORN.grid(row=7,column=4,pady=10)
+			rows=self.obj_consultaN.Tabla_All('DESTINO')
+
+			util.llenar_combo(self.ACOMBO_DESTINORN,rows,['ID_DESTINO','NOMBRE_DESTINO'])
+			self.ACOMBO_DESTINORN.current(5)	
 
 			label=Label(self.TopAIRN,text="OBSERVACION RN:",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 			label.grid(row=7,column=5,pady=10)
 			self.AEntry_OBSERVACION=ttk.Entry(self.TopAIRN,width=25)
-			self.AEntry_OBSERVACION.grid(row=7,column=6,pady=10,columnspan=2)			
+			self.AEntry_OBSERVACION.grid(row=7,column=6,pady=10,columnspan=2)		
 
 
 			label=Label(self.TopAIRN,text="Hora E.AIRN",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
@@ -825,7 +833,7 @@ class MadreN(object):
 			style.configure("btnClose.TButton",background="red",font=("Helvetica", 12))
 			self.ButtonEliminaCIE=ttk.Button(self.TopAIRN,text="Quitar Dx",style="btnClose.TButton",cursor="hand2",state="disabled")
 			self.ButtonEliminaCIE.grid(row=11,column=6,pady=10)
-			self.ButtonEliminaCIE['command']=lambda :self.eliminarSeleccionTable(self.table_DX)
+			self.ButtonEliminaCIE['command']=lambda :util.borrar_seleccionado(self.table_DX)
 
 			self.table_DX=ttk.Treeview(self.TopAIRN,columns=('#1','#2'),show='headings',height=5)
 			self.table_DX.heading("#1",text="CODIGO CIE")
@@ -938,7 +946,7 @@ class MadreN(object):
 		self.table_CIE.bind('<<TreeviewSelect>>',self.itemTable_SelectedCIE)
 
 	def buscar_cie(self,event):		
-		self.borrarTabla(self.table_CIE)
+		util.borra_Table(self.table_CIE)
 		parametro=''		
 		if len(self.Entry_buscar_General.get())!=0:			
 			parametro=parametro+self.Entry_buscar_General.get()
@@ -960,16 +968,13 @@ class MadreN(object):
 				self.TopCIE.destroy()
 			else:
 				messagebox.showerror("Alerta","El diagnostico ya Existe!!")	
+				
 
-	def eliminarSeleccionTable(self,table):
-		seleccion=self.table_DX.focus()
-		if seleccion:
-			self.table_DX.delete(seleccion)
 
 	def insertAIRN(self):
 		datos=[]
 		datos.append(self.AEntry_HCL.get())
-		datos.append(self.AEntry_CNV.get())
+		datos.append(self.AEntry_CNV.get() if len(self.AEntry_CNV.get())>0 else 0)
 		datos.append(self.AEntry_PINZAMIENTO.get() if self.AEntry_PINZAMIENTO.get() else "null")
 
 		if self.checkContactoP.get():
@@ -1000,7 +1005,8 @@ class MadreN(object):
 		datos.append(self.ACOMBO_MECONICO.get())
 		datos.append(self.ACOMBO_ORINA.get())
 		datos.append(self.ACOMBO_ASFIXIA.get())
-		datos.append(self.AEntry_DESTINORN.get())
+		destino=self.ACOMBO_DESTINORN.get()
+		datos.append(destino[:destino.find("_")])
 		datos.append(self.AEntry_OBSERVACION.get() if self.AEntry_OBSERVACION.get() else "null")
 		#datos.append(self.AEntry_DX.get())
 		idmadre=self.table_Madres.item(self.table_Madres.selection()[0],option="values")[0]
@@ -1013,6 +1019,7 @@ class MadreN(object):
 		datos.append(1 if self.estadoHospitalizado.get() else 0)
 		datos.append(1 if self.estadoInterconsulta.get() else 0)
 		self.AEntry_MedicoInterconsulta.configure(state='normal')
+
 		datos.append(" " if len(self.AEntry_MedicoInterconsulta.get())<1 else self.AEntry_MedicoInterconsulta.get())		
 		datos.append(self.comboSeguro.get())
 		self.AEntry_Datos['state']='normal'
@@ -1040,6 +1047,7 @@ class MadreN(object):
 				messagebox.showerror("Alerta","Ingrese todo los campos")
 		else:
 			messagebox.showerror('Alerta!','Ingrese una Historia válida')
+
 
 	#ALOJAMIENTO
 	def Frame_Alojamiento(self,frame,width,height):
@@ -1074,8 +1082,7 @@ class MadreN(object):
 		self.table_Alojamiento.column("#5",width=200,anchor="w",stretch='NO')
 		self.table_Alojamiento.heading("#6",text="Fecha Nac. RN")
 		self.table_Alojamiento.column("#6",width=200,anchor="w",stretch='NO')						
-		self.table_Alojamiento.grid(row=3,column=2,padx=10,pady=2,columnspan=20)
-		#self.table_Alojamiento.bind('<<TreeviewSelect>>',self.Selection_Table)
+		self.table_Alojamiento.grid(row=3,column=2,padx=10,pady=2,columnspan=20)		
 		self.llenar_TAlojamiento()
 		self.table_Alojamiento.bind("<Double-Button-1>",self.top_Alojamiento)
 		self.table_Alojamiento.bind("<Button-3>",lambda event:self.EventMenuUpdateAir(event,self.table_Alojamiento,self.menu)) 
@@ -1084,21 +1091,21 @@ class MadreN(object):
 		self.menu=Menu(frameM,tearoff=0)
 		self.menu.add_command(label="Ingresar Pacientes",command=obj_alojamiento.TopIngresoAlojamiento)
 		self.menu.add_command(label="Eliminar",command=lambda:obj_alojamiento.EliminarDataTable(self.table_Alojamiento))
-
-		#self.Button
+	
 		
 	def llenar_TAlojamiento(self):
-		self.borrarTabla(self.table_Alojamiento)
-		rows=self.obj_consultaN.ConsultaIngresaAlojamiento()
+		util.borra_Table(self.table_Alojamiento)
+		rows=self.obj_consultaN.ConsultaIngresaAlojamiento()		
 		obj_Paciente=queryGalen()
+		
 		for val in rows:
 			rowG=obj_Paciente.query_Paciente(val.DNI)
 			rowsNacido=obj_Paciente.query_PacienteXHCL(val.HCL)						
-			self.table_Alojamiento.insert("","end",values=(val.Id_AIR,val.DNI,rowG[0].PrimerNombre+" "+rowG[0].ApellidoPaterno+" "+rowG[0].ApellidoMaterno,rowsNacido[0].PrimerNombre+" "+rowsNacido[0].ApellidoPaterno+" "+rowsNacido[0].ApellidoMaterno,val.HCL,rowsNacido[0].FechaNacimiento))
+			self.table_Alojamiento.insert("","end",values=(val.Id_AIR,val.DNI,rowG[0].PrimerNombre+" "+rowG[0].ApellidoPaterno+" "+rowG[0].ApellidoMaterno,rowsNacido[0].PrimerNombre+" "+rowsNacido[0].ApellidoPaterno+" "+rowsNacido[0].ApellidoMaterno,val.HCL,str(rowsNacido[0].FechaNacimiento)[:10]))
 
 	def top_Alojamiento(self,event):
 		self.top_Alojamiento=Toplevel()
-		self.top_Alojamiento.geometry("700x450")
+		self.top_Alojamiento.geometry("900x650")
 		self.top_Alojamiento.title("Ingresar datos")
 		self.top_Alojamiento.grab_set()
 		self.top_Alojamiento.resizable(0,0)
@@ -1106,8 +1113,7 @@ class MadreN(object):
 		label=Label(self.top_Alojamiento,text="Fecha Alta: ",font=('Arial',10,'bold'))
 		label.grid(row=1,column=1,pady=10)	
 		self.fechaAltaA=DateEntry(self.top_Alojamiento,selectmode='day',date_pattern='yyyy-MM-dd')
-		self.fechaAltaA.grid(row=1,column=2,pady=10,padx=10)
-		#self.fechaHasta.bind("<<DateEntrySelected>>",lambda event:self.event_Combo(event,0))
+		self.fechaAltaA.grid(row=1,column=2,pady=10,padx=10)		
 
 		label=Label(self.top_Alojamiento,text="ALTA: ",font=('Arial',10,'bold'))
 		label.grid(row=1,column=3,pady=10)
@@ -1125,7 +1131,7 @@ class MadreN(object):
 		self.fechaTamizajeA=DateEntry(self.top_Alojamiento,selectmode='day',date_pattern='yyyy-MM-dd',state='disabled')
 		self.fechaTamizajeA.grid(row=2,column=2,pady=10,padx=10)
 
-		check.configure(command=lambda:self.validar_Campo(checkTamizaje,self.fechaTamizajeA))
+		check.configure(command=lambda:util.validar_Campo(checkTamizaje,self.fechaTamizajeA))
 
 		label=Label(self.top_Alojamiento,text="Hemoglobina: ",font=('Arial',10,'bold'))
 		label.grid(row=2,column=3,pady=10)
@@ -1146,33 +1152,91 @@ class MadreN(object):
 
 		self.checkTransferenciaFromAlojamiento=BooleanVar()
 
-		check=Checkbutton(self.top_Alojamiento,text="Transferir",variable=self.checkTransferenciaFromAlojamiento)
+		check=Checkbutton(self.top_Alojamiento,text="Transferir a Observacion",variable=self.checkTransferenciaFromAlojamiento)
 		check.grid(row=4,column=2,columnspan=2)
 		check['command']=self.validarCheckAlojamiento
 
 		self.marcoTransferencia=LabelFrame(self.top_Alojamiento,text="Datos de Transferencia",fg="blue",padx=10,pady=10)
 		self.marcoTransferencia.grid(row=5,column=0,columnspan=6)
 
-		label=Label(self.marcoTransferencia,text="Servicio ",font=('Arial',10,'bold'))
+		label=Label(self.marcoTransferencia,text="Responsable: ",font=('Arial',10,'bold'))
 		label.grid(row=1,column=1,pady=10)
-		self.comboServicioAlojamiento=ttk.Combobox(self.marcoTransferencia,state="disabled")
-		self.comboServicioAlojamiento.grid(row=1,column=2,pady=10,padx=10)
+		self.AEntry_ResponsableObservacion=ttk.Entry(self.marcoTransferencia,width=15,state="readonly")
+		self.AEntry_ResponsableObservacion.grid(row=1,column=2,pady=10)
+		self.AEntry_ResponsableObservacion.bind("<Return>",lambda event:self.Search_Personal(event,"OBSERVACIONALOJAMIENTO"))		
 		
-		label=Label(self.marcoTransferencia,text="Edada Gest. ",font=('Arial',10,'bold'))
+		label=Label(self.marcoTransferencia,text="Fecha Ingreso ",font=('Arial',10,'bold'))
 		label.grid(row=1,column=3,pady=10)
-		self.entry_EdadGestacionalAlojamiento=ttk.Entry(self.marcoTransferencia)
-		self.entry_EdadGestacionalAlojamiento.grid(row=1,column=4)
+		self.fechaEO=DateEntry(self.marcoTransferencia,date_pattern='yyyy-MM-dd')
+		self.fechaEO.grid(row=1,column=4)
 
-		label=Label(self.marcoTransferencia,text="Procedencia Madre ",font=('Arial',10,'bold'))
+		self.time_AlojamientoOIngreso=SpinTimePickerModern(self.marcoTransferencia)
+		self.time_AlojamientoOIngreso.addAll(constants.HOURS24)			
+		self.time_AlojamientoOIngreso.setMins(str(self.timeDate).split(":")[1])
+		self.time_AlojamientoOIngreso.set24Hrs(str(self.timeDate).split(":")[0])
+		self.time_AlojamientoOIngreso.configureAll(bg="#404040", height=1, fg="#ffffff", font=("Times", 16), hoverbg="#404040",hovercolor="#d73333", clickedbg="#2e2d2d", clickedcolor="#d73333")
+		self.time_AlojamientoOIngreso.configure_separator(bg="#404040",fg="#fff")
+		self.time_AlojamientoOIngreso.grid(row=1,column=5,pady=10)
+		
+
+		label=Label(self.marcoTransferencia,text="Fecha Salida ",font=('Arial',10,'bold'))
+		label.grid(row=1,column=6,pady=10)
+		self.fechaSO=DateEntry(self.marcoTransferencia,date_pattern='yyyy-MM-dd')
+		self.fechaSO.grid(row=1,column=7)
+
+		self.time_AlojamientoOSalida=SpinTimePickerModern(self.marcoTransferencia)
+		self.time_AlojamientoOSalida.addAll(constants.HOURS24)			
+		self.time_AlojamientoOSalida.setMins(str(self.timeDate).split(":")[1])
+		self.time_AlojamientoOSalida.set24Hrs(str(self.timeDate).split(":")[0])
+		self.time_AlojamientoOSalida.configureAll(bg="#404040", height=1, fg="#ffffff", font=("Times", 16), hoverbg="#404040",hovercolor="#d73333", clickedbg="#2e2d2d", clickedcolor="#d73333")
+		self.time_AlojamientoOSalida.configure_separator(bg="#404040",fg="#fff")
+		self.time_AlojamientoOSalida.grid(row=1,column=8,pady=10)
+
+
+
+		label=Label(self.marcoTransferencia,text="Vomito",font=('Arial',10,'bold'))
 		label.grid(row=2,column=1,pady=10)
-		self.entry_ProcendenciaMadre=ttk.Entry(self.marcoTransferencia)
-		self.entry_ProcendenciaMadre.grid(row=2,column=2)
-
-		label=Label(self.marcoTransferencia,text="Lugar Nac. ",font=('Arial',10,'bold'))
+		self.comboVomito=ttk.Combobox(self.marcoTransferencia,values=['SI','NO'])
+		self.comboVomito.grid(row=2,column=2,pady=10,padx=10)
+		self.comboVomito.current(0)
+		
+		label=Label(self.marcoTransferencia,text="Heces",font=('Arial',10,'bold'))
 		label.grid(row=2,column=3,pady=10)
-		self.comboLugarNacAlojamiento=ttk.Combobox(self.marcoTransferencia,values=['Hospital','Puesto Salud','Centro Salud','Trayectoria','Domicilio'])
-		self.comboLugarNacAlojamiento.grid(row=2,column=4,pady=10,padx=10)
-		self.comboLugarNacAlojamiento.current(0)
+		self.comboHeces=ttk.Combobox(self.marcoTransferencia,values=['SI','NO'])
+		self.comboHeces.grid(row=2,column=4,pady=10,padx=10)
+		self.comboHeces.current(0)
+
+		label=Label(self.marcoTransferencia,text="Orina",font=('Arial',10,'bold'))
+		label.grid(row=2,column=5,pady=10)
+
+		self.comboOrina=ttk.Combobox(self.marcoTransferencia,values=['SI','NO'])
+		self.comboOrina.grid(row=2,column=6,pady=10,padx=10)
+		self.comboOrina.current(0)
+
+		label=Label(self.marcoTransferencia,text="Destino",font=('Arial',10,'bold'))
+		label.grid(row=3,column=1,pady=10)
+		self.DestinoObservacion=ttk.Combobox(self.marcoTransferencia)
+		self.DestinoObservacion.grid(row=3,column=2,pady=10,padx=10)
+		rowsDestino=self.obj_consultaN.Tabla_All('DESTINO')
+		util.llenar_combo(self.DestinoObservacion,rowsDestino,['ID_DESTINO','NOMBRE_DESTINO'])
+		self.DestinoObservacion.current(2)
+
+
+		self.menuObservacionDX1=Menu(self.marcoTransferencia,tearoff=0)
+		self.menuObservacionDX1.add_command(label="Agregar Dx",command=lambda:self.top_DxObservacionAdd(self.table_DXAloObservacion))		
+		self.menuObservacionDX1.add_command(label="Quitar",command=lambda:util.borrar_seleccionado(self.table_DXAloObservacion))
+
+		self.table_DXAloObservacion=ttk.Treeview(self.marcoTransferencia,columns=('#1','#2','#3'),show='headings')
+		self.table_DXAloObservacion.heading("#1",text="Codigo")
+		self.table_DXAloObservacion.column("#1",width=60,anchor="w",stretch='NO')
+		self.table_DXAloObservacion.heading("#2",text="Descripcion")
+		self.table_DXAloObservacion.column("#2",width=250,anchor="w",stretch='NO')
+		self.table_DXAloObservacion.heading("#3",text="Tipo")
+		self.table_DXAloObservacion.column("#3",width=70,anchor="w",stretch='NO')
+									
+		self.table_DXAloObservacion.grid(row=4,column=1,padx=10,pady=2,columnspan=20)
+		self.table_DXAloObservacion.bind("<Button-3>",self.EventMenuAloObservacionDX)
+
 
 		btnAdd=ttk.Button(self.top_Alojamiento,text="Agregar")
 		btnAdd.grid(row=6,column=2,pady=10,padx=10)
@@ -1182,11 +1246,10 @@ class MadreN(object):
 		btnCancelar['command']=self.top_Alojamiento.destroy
 		btnCancelar.grid(row=6,column=3,pady=10,padx=10)
 
-	def validar_Campo(self,check,campo):		
-		if check.get():
-			campo.configure(state="normal")
-		else:
-			campo.configure(state="disabled")
+	def EventMenuAloObservacionDX(self,event):
+		item=self.table_DXAloObservacion.identify_row(event.y)
+		self.table_DXAloObservacion.selection_set(item)
+		self.menuObservacionDX1.post(event.x_root,event.y_root)	
 
 	def llenarAlojamientoServicio(self):
 		from Neonatologia.consultaNeonatologia import Consulta
@@ -1202,70 +1265,112 @@ class MadreN(object):
 	def validarCheckAlojamiento(self):
 		
 		if  self.checkTransferenciaFromAlojamiento.get():
-			self.comboServicioAlojamiento.configure(state='readonly')
-			self.llenarAlojamientoServicio()
+			Id_AIR=self.table_Alojamiento.item(self.table_Alojamiento.selection()[0],option='values')[0]
+			rowObservacion=self.obj_consultaN.consulta_Tabla1("OBSERVACIONAIRN","Id_AIR",Id_AIR)
+			controlador=1
+			for val in rowObservacion:
+				if val.ID_ALOJAMIENTO==1:
+					controlador=0					
+					break
+
+			if not controlador:				
+				messagebox.showerror("Alerta","El Registro ya existe para este paciente!!")
+				self.checkTransferenciaFromAlojamiento.set(False)
+
 			self.AEntry_ObservacionA.configure(state='disabled')
 			self.marcoTransferencia.configure(text="Se considera los datos dentro del marco",fg="green")
 		else:
-			self.AEntry_ObservacionA.configure(state='normal')
-			self.comboServicioAlojamiento.configure(state='disabled')
+			
+			self.AEntry_ObservacionA.configure(state='normal')			
 			self.marcoTransferencia.configure(text="No se considera los datos dentro del marco",fg="red")
 
 	def insert_Alojamiento(self,check):
 		Id_AIR=self.table_Alojamiento.item(self.table_Alojamiento.selection()[0],option='values')[0]
+
 		fechaAlta=str(self.fechaAltaA.get_date())
 		alta=self.ACOMBO_AltaA.get()
 		fecha_tamizaje=str(self.fechaAltaA.get_date())
 		hemoglobina=self.AEntry_HemoglobinaA.get()
+
 		self.AEntry_MedicoA.configure(state="normal")
 		medicoA=self.AEntry_MedicoA.get().strip()
-		observacion=self.comboServicioAlojamiento.get()[:1] if self.checkTransferenciaFromAlojamiento.get() else self.AEntry_ObservacionA.get()
-
+		
 		nro=0
 		IdRes=self.obj_consultaN.get_id('ALOJAMIENTO','ID_ALOJAMIENTO')
 		nro=1 if IdRes[0].ID==None else IdRes[0].ID+1
 		
 
 		if check.get():
-			campo=('ID_ALOJAMIENTO','FECHA_ALTA','ALTA','FECHA_TAMIZAJE','HEMOGLOBINA','DR_RESPONSABLE','OBSERVACION','Id_AIR','REG_USER','REG_FECHA')
-			datos=(nro,fechaAlta,alta,fecha_tamizaje,hemoglobina,medicoA,observacion,Id_AIR,self.usuario,str(datetime.now()))
+			campo=('ID_ALOJAMIENTO','FECHA_ALTA','ALTA','FECHA_TAMIZAJE','HEMOGLOBINA','DR_RESPONSABLE','Id_AIR','REG_USER','REG_FECHA')
+			datos=(nro,fechaAlta,alta,fecha_tamizaje,hemoglobina,medicoA,Id_AIR,self.usuario,str(datetime.now()))
 		else:
-			campo=('ID_ALOJAMIENTO','FECHA_ALTA','ALTA','HEMOGLOBINA','DR_RESPONSABLE','OBSERVACION','Id_AIR','REG_USER','REG_FECHA')
-			datos=(nro,fechaAlta,alta,hemoglobina,medicoA,observacion,Id_AIR,self.usuario,str(datetime.now()))
+			campo=('ID_ALOJAMIENTO','FECHA_ALTA','ALTA','HEMOGLOBINA','DR_RESPONSABLE','Id_AIR','REG_USER','REG_FECHA')
+			datos=(nro,fechaAlta,alta,hemoglobina,medicoA,Id_AIR,self.usuario,str(datetime.now()))
 
-		validarDatos={"hemoglobina":hemoglobina,"Responsable Medico":medicoA}
-		numero=util.validarCampos(validarDatos)
-		if numero:
-			#nro=self.obj_consultaN.insert_Alojamiento(datos)
-			nro=self.obj_consultaN.insertDataTable("ALOJAMIENTO",campo,datos)
-			if nro:
+		
+		numero=1
+		if numero:			
+			numberalojamiento=self.obj_consultaN.insertDataTable("ALOJAMIENTO",campo,datos)
+			if numberalojamiento:
 				self.obj_consultaN.Update_Tabla('AIR','estadoAlojamiento',1,'Id_AIR',Id_AIR)
 
 				if self.checkTransferenciaFromAlojamiento.get():
-					from Neonatologia.consultaNeonatologia import Consulta
-					rows=self.obj_consultaN.consulta_datosAir(Id_AIR)
-					HCLRN=rows[0].HCL
-					DNIMADRE=rows[0].DNI
-					edadGestacional=self.entry_EdadGestacionalAlojamiento.get()
-					LugarNacimiento=self.comboLugarNacAlojamiento.get()
-					tipo_parto=rows[0].tipo_Parto
-					procedenciaMadre=self.entry_ProcendenciaMadre.get()
+						horaIngreso="{}:{}".format(*self.time_AlojamientoOIngreso.time())
+						fechaEntrada=self.fechaEO.get_date()
+						horaIngreso="{}:{}".format(*self.time_AlojamientoOIngreso.time())
+						FechaIngresoCompuesta=str(fechaEntrada)+" "+str(horaIngreso)
 
-					obj_neo=Consulta()
-					nro,idIngreso=obj_neo.InsertarDatosGenerales(HCLRN,DNIMADRE,edadGestacional,LugarNacimiento,tipo_parto,procedenciaMadre)
-					destino=self.comboServicioAlojamiento.get()[:1]
+						horaSalida="{}:{}".format(*self.time_AlojamientoOSalida.time())
+						fechaSalida=self.fechaSO.get_date()
 
-					if nro:
-						obj_neo.InsertarINGRESO(idIngreso,destino)
+						FechaSalidaCompuesta= str(fechaSalida)+" "+str(horaSalida)
+						vomito=self.comboVomito.get()
+						orina=self.comboOrina.get()
+						heces=self.comboHeces.get()
+						self.AEntry_ResponsableObservacion.configure(state='normal')
+						responsable=self.AEntry_ResponsableObservacion.get()
 
-				messagebox.showinfo("Alerta","Se inserto correctamente")
+						get_idMax=self.obj_consultaN.get_id("OBSERVACIONAIRN","id_obs")
+						nro=1 if get_idMax[0].ID==None else get_idMax[0].ID+1
+
+						destino=self.DestinoObservacion.get()[:self.DestinoObservacion.get().find("_")]
+
+
+						camposObservacion=('id_obs','Id_AIR','ID_ALOJAMIENTO','FECHAI','FECHAS','VOMITO','ORINA','HECES','RESPONSABLEATENCION','DESTINO')
+						valoresObservacion=(nro,Id_AIR,1,FechaIngresoCompuesta,FechaSalidaCompuesta,vomito,orina,heces,responsable,destino)
+
+						comprobar=self.obj_consultaN.insertDataTable("OBSERVACIONAIRN",camposObservacion,valoresObservacion)
+			
+						if comprobar:
+							for child in self.table_DXAloObservacion.get_children():
+								get_idMaxDx=self.obj_consultaN.get_id("DXOBSERVACIONAIRN","Id_DxObs")
+								nrdx=1 if get_idMaxDx[0].ID==None else get_idMaxDx[0].ID+1
+								CODCIE=self.table_DXAloObservacion.item(child)["values"][0]
+								descripcion=self.table_DXAloObservacion.item(child)["values"][1]
+								tipo=self.table_DXAloObservacion.item(child)["values"][2]
+								self.obj_consultaN.Insert_AIRNObservacionDX([nrdx,CODCIE,descripcion,tipo,nro])							
+							
+						else:
+							messagebox.showerror("Alerta","Ya cuenta con un registro")
+						
 				self.top_Alojamiento.destroy()
+				messagebox.showinfo("Notificación",'exitoso')
 				self.llenar_TAlojamiento()
+
 			else:
 				messagebox.showerror("Alerta","No pudo Ingresar!!")
 		else:
 			messagebox.showinfo("Notificación","Ingrese todos los campos")
 
+	def event_combo(self):
+		Id_AIR=self.table_Alojamiento.item(self.table_Alojamiento.selection()[0],option='values')[0]
+		rowObservacion=self.obj_consultaN.consulta_Tabla1("OBSERVACIONAIRN","Id_AIR",Id_AIR)
+		contralador=1
+		for val in rowObservacion:
+			if val.ID_ALOJAMIENTO==1:
+				contralador=0
+				messagebox.showerror("Alerta","El Registro ya existe para este paciente!!")
+				break
 	def HistorialAIRN(self,event):		
 
 		frameHistorial=Frame(self.frameMadre,width=self.width,height=self.height,bg='#828682')
@@ -1274,8 +1379,7 @@ class MadreN(object):
 
 		self.table_HistorialAIRN=ttk.Treeview(frameHistorial,columns=('#1','#2','#3','#4','#5','#6'),show='headings')
 		self.menuObservacion=Menu(frameHistorial,tearoff=0)
-		self.menuObservacion.add_command(label="Modificar Datos RN",command=lambda:self.UpdateRN(0,self.table_HistorialAIRN))
-		#self.menuObservacion.add_command(label="Ingresa Observacion",command=self.insertObservacionAirn)
+		self.menuObservacion.add_command(label="Modificar Datos RN",command=lambda:self.UpdateRN(0,self.table_HistorialAIRN))		
 		self.menuObservacion.add_command(label="Modificar Observacion")
 
 		label=Label(frameHistorial,text="Historial de los ultimos Ingresos",bg="#828682",fg="#fff",font=("Helvetica", "16"))
@@ -1305,11 +1409,58 @@ class MadreN(object):
 		self.llenarTablaHistorialAIRN()
 
 
+		
+		image=PhotoImage(file='img/ExcelDonwload.png')
+		
+		linkdescarga=Label(frameHistorial,cursor="hand2",bg="#828682",image=image,text='Reporte AIRN',compound="top",font=('Arial',10,'bold'),fg="white")				
+		linkdescarga.bind("<Button-1>",lambda event:self.descagarReporte(event,'AIR'))
+		linkdescarga.image=image
+		linkdescarga.grid(row=5,column=0)
+
+		linkInterconsulta=Label(frameHistorial,cursor="hand2",bg="#828682",image=image,text='Reporte Interconsulta',compound="top",font=('Arial',10,'bold'),fg="white")				
+		linkInterconsulta.bind("<Button-1>",lambda event:self.descagarReporte(event,'INTERCONSULTA'))
+		linkInterconsulta.image=image
+		linkInterconsulta.grid(row=5,column=1)
+
+	def descagarReporte(self,event,indicador):
+		
+		toplevel=Toplevel()
+		toplevel.geometry("400x200")
+		toplevel.title("Seleccione la fecha")
+		toplevel.grab_set()
+
+		label=Label(toplevel,text='Fecha Inicio')
+		label.grid(row=1,column=1)
+		fechaInicio=DateEntry(toplevel,selectmode='day',date_pattern='yyyy-MM-dd')
+		fechaInicio.grid(row=1,column=2,pady=10,padx=10)
+
+		label=Label(toplevel,text='Fecha Fin')
+		label.grid(row=1,column=3)
+		fechaFin=DateEntry(toplevel,selectmode='day',date_pattern='yyyy-MM-dd')
+		fechaFin.grid(row=1,column=4,pady=10,padx=10)
+
+		buttonGenerar=Button(toplevel,text="Generar")
+		buttonGenerar.configure(command=lambda:self.Generar(event,toplevel,fechaInicio,fechaFin,indicador))
+		buttonGenerar.grid(row=2,column=3)
+
+
+	def Generar(self,event,top,fechai,fechaf,indicador):
 		from Nacidos.ReporteGeneral import RGeneral
-		obj=RGeneral()
-		linkdescarga=Label(frameHistorial,text="Descargar",cursor="hand2")		
-		linkdescarga.bind("<Button-1>",lambda event=event:obj.General(event,'2024-04-01','2024-05-14'))
-		linkdescarga.grid(row=5,column=3)
+		fechainicio=fechai.get_date()
+		fechafin=fechaf.get_date()
+		top.destroy()
+		direccion = filedialog.asksaveasfilename(title='Seleccione una ubicacion',defaultextension='.xlsx',initialfile="ReporteRN.xlsx",filetypes=(("Archivos Excels","*.xlsx"),))		
+		if direccion:
+			obj=RGeneral()
+			
+			if indicador=='AIR':
+				obj.General(event,direccion,f'{fechainicio}',f'{fechafin}')
+			elif indicador=='INTERCONSULTA':
+				obj.Interconsulta(event,direccion,f'{fechainicio}',f'{fechafin}')
+
+			messagebox.showinfo("success",f"Se generó correctamente en : {direccion}")
+		else:
+			messagebox.showerror("Error","Seleccione una ubicación válida!!")
 
 	def EventMenuAirn(self,event):
 		item=self.table_HistorialAIRN.identify_row(event.y)
@@ -1327,26 +1478,20 @@ class MadreN(object):
 
 	def insertObservacionAirn(self):
 		if self.table_Airn.selection():
-			idAirn=self.table_Airn.item(self.table_Airn.selection())["values"][5]
-			
-			rowsid=self.obj_consultaN.get_idTable("OBSERVACIONAIRN","Id_AIR",idAirn,"id_obs")
-			
+			idAirn=self.table_Airn.item(self.table_Airn.selection())["values"][5]			
+			rowsid=self.obj_consultaN.get_idTable("OBSERVACIONAIRN","Id_AIR",idAirn,"id_obs")			
 			if not rowsid:
 				self.top_ObsAirn=Toplevel()
 				self.top_ObsAirn.geometry("700x400")
 				self.top_ObsAirn.title("Ingresar datos")
 				self.top_ObsAirn.grab_set()
-				self.top_ObsAirn.resizable(0,0)
-
-				#date=datetime.datetime.now()
+				self.top_ObsAirn.resizable(0,0)				
 
 				label=Label(self.top_ObsAirn,text="Fecha de Ingreso ")
 				label.grid(row=1,column=1)
 				FechaIngreso=DateEntry(self.top_ObsAirn,selectmode='day',date_pattern='dd/mm/yyyy')
 				FechaIngreso.grid(row=1,column=2)
-
-				#label=Label(self.top_ObsAirn,text="H.Ingreso",font=('Arial',10,'bold'))
-				#label.grid(row=1,column=3,pady=10)
+				
 				self.time_OIngreso=SpinTimePickerModern(self.top_ObsAirn)
 				self.time_OIngreso.addAll(constants.HOURS24)			
 				self.time_OIngreso.setMins(str(self.timeDate).split(":")[1])
@@ -1359,9 +1504,7 @@ class MadreN(object):
 				label.grid(row=1,column=5)
 				FechaEgreso=DateEntry(self.top_ObsAirn,selectmode='day',date_pattern='dd/mm/yyyy')
 				FechaEgreso.grid(row=1,column=6)
-
-				#label=Label(self.top_ObsAirn,text="H.Egreso",font=('Arial',10,'bold'))
-				#label.grid(row=1,column=7,pady=10)
+				
 				self.time_OEngreso=SpinTimePickerModern(self.top_ObsAirn)
 				self.time_OEngreso.addAll(constants.HOURS24)			
 				self.time_OEngreso.setMins(str(self.timeDate).split(":")[1])
@@ -1389,7 +1532,7 @@ class MadreN(object):
 				btncancelar.grid(row=3,column=4,pady=10)
 
 				self.menuObservacionDX=Menu(self.top_ObsAirn,tearoff=0)
-				self.menuObservacionDX.add_command(label="Agregar Dx",command=self.top_DxObservacionAdd)
+				self.menuObservacionDX.add_command(label="Agregar Dx",command=lambda:self.top_DxObservacionAdd(self.table_DxObservacion))
 				self.menuObservacionDX.add_command(label="Quitar",command=lambda:util.borrar_seleccionado(self.table_DxObservacion))
 			else:
 				messagebox.showerror("Error","Ya cuenta con un registro!!")
@@ -1428,14 +1571,12 @@ class MadreN(object):
 			fechasalida=FechaEgreso.get_date()
 			horaEgreso="{}:{}".format(*self.time_OEngreso.time())
 
-			fechaGI=str(fechaingreso)+"T"+str(horaIngreso)+":00.00"
-			fechaGS=str(fechasalida)+"T"+str(horaEgreso)+":00.00"
-
-			#FI=datetime.strptime(fechaGI, '%Y-%m-%d %H:%M:%S')
-			#FS=datetime.strptime(fechaGS, '%Y-%m-%d %H:%M:%S')
+			fechaGI=str(fechaingreso)+" "+str(horaIngreso)+":00.00"
+			fechaGS=str(fechasalida)+" "+str(horaEgreso)+":00.00"			
 		
 			#estado=0
-			comprobar=self.obj_consultaN.Insert_AIRNObservacion([nro,idAirn,0,fechaGI,fechaGS,0])
+			comprobar=self.obj_consultaN.insertDataTable("OBSERVACIONAIRN",('id_obs','Id_AIR','ID_ALOJAMIENTO','FECHAI','FECHAS','ESTADO'),(nro,idAirn,0,fechaGI,fechaGS,0))
+			
 			if comprobar:
 				for child in self.table_DxObservacion.get_children():
 					get_idMaxDx=self.obj_consultaN.get_id("DXOBSERVACIONAIRN","Id_DxObs")
@@ -1456,16 +1597,13 @@ class MadreN(object):
 		self.table_DxObservacion.selection_set(item)
 		self.menuObservacionDX.post(event.x_root,event.y_root)
 
-	def top_DxObservacionAdd(self):
+	def top_DxObservacionAdd(self,tabla):
 		self.top_AddDx=Toplevel()
 		self.top_AddDx.title("Buscar Diagnostico")
 		self.top_AddDx.iconbitmap('img/buscar.ico')
 		self.top_AddDx.geometry("600x100")
 		self.top_AddDx.resizable(0,0)
-		self.top_AddDx.grab_set()
-
-		#itemTable=self.table_datos.selection()[0]
-		#id_diagnostico=self.table_datos.item(self.table_datos.selection()[0])['values'][0]
+		self.top_AddDx.grab_set()		
 	
 
 		label=Label(self.top_AddDx,text="CIE")
@@ -1486,15 +1624,15 @@ class MadreN(object):
 		self.Tipo_entryEditar.grid(row=1,column=6)		
 
 		button_GrabarDX=ttk.Button(self.top_AddDx,text="Aceptar")
-		button_GrabarDX["command"]=self.InsertTableObsDX
+		button_GrabarDX["command"]=lambda:self.InsertTableObsDX(tabla)
 		button_GrabarDX.grid(row=2,column=4,pady=5)
 
-	def InsertTableObsDX(self):
+	def InsertTableObsDX(self,tabla):
 		cie=self.cie_entryEditar.get()
 		descripcion=self.Descripcion_entryEditar.get()
 		tipo=self.Tipo_entryEditar.get()
 		rows=[cie,descripcion,tipo]
-		self.table_DxObservacion.insert("","end",values=rows)
+		tabla.insert("","end",values=rows)
 		self.top_AddDx.destroy()
 		#util.llenar_Table(self.table_DxObservacion,rows,["cie","descripcion","tipo"])
 
@@ -1509,33 +1647,27 @@ class MadreN(object):
 			messagebox.showerror("Alerta","Datos no Encontrados")			
 			self.top_EditarC.destroy()
 			self.Top_Editar.grab_set()
-
-	def fillTableObservacion(self):
-		pass
+	
 	def llenarTablaHistorialAIRN(self):
 		rows=self.obj_consultaN.consulta_DigitadosAIRN()
 		obj_Paciente=queryGalen()
 		for val in rows:
 			rowsMadre=obj_Paciente.query_Paciente(val.DNI)
 			rowsNacido=obj_Paciente.query_PacienteXHCL(val.HCL)
-
 			self.table_HistorialAIRN.insert("","end",values=(val.Id_AIR,val.DNI,rowsMadre[0].PrimerNombre+" "+rowsMadre[0].ApellidoPaterno+" "+rowsMadre[0].ApellidoMaterno,rowsNacido[0].PrimerNombre+" "+rowsNacido[0].ApellidoPaterno+" "+rowsNacido[0].ApellidoMaterno,val.HCL,rowsNacido[0].FechaNacimiento))
 	
 	def searchHistorialAIRN(self,event,entry):
 		param=""
 		param=param+entry.get()
-		self.borrar_tabla(self.table_HistorialAIRN)
+		util.borra_Table(self.table_HistorialAIRN)
 		rows=self.obj_consultaN.consulta_DigitadosAIRNLike(param)
 		obj_Paciente=queryGalen()
 
 		for val in rows:
 			rowsMadre=obj_Paciente.query_Paciente(val.DNI)
 			rowsNacido=obj_Paciente.query_PacienteXHCL(val.HCL)
-			self.table_HistorialAIRN.insert("","end",values=("ID",val.DNI,rowsMadre[0].PrimerNombre+" "+rowsMadre[0].ApellidoPaterno+" "+rowsMadre[0].ApellidoMaterno,rowsNacido[0].PrimerNombre+" "+rowsNacido[0].ApellidoPaterno+" "+rowsNacido[0].ApellidoMaterno,val.HCL,rowsNacido[0].FechaNacimiento))
-
-	def borrar_tabla(self,Tabla):				
-		for item in Tabla.get_children():
-			Tabla.delete(item)
+			self.table_HistorialAIRN.insert("","end",values=(val.Id_AIR,val.DNI,rowsMadre[0].PrimerNombre+" "+rowsMadre[0].ApellidoPaterno+" "+rowsMadre[0].ApellidoMaterno,rowsNacido[0].PrimerNombre+" "+rowsNacido[0].ApellidoPaterno+" "+rowsNacido[0].ApellidoMaterno,val.HCL,rowsNacido[0].FechaNacimiento))
+	
 
 	def HistorialAlojamiento(self,event):
 		frameHistorialAlojamiento=Frame(self.frameMadre,width=self.width,height=self.height,bg='#828682')
@@ -1579,7 +1711,7 @@ class MadreN(object):
 	def searchHistorialAlojamiento(self,event,entry):
 		param=""
 		param=param+entry.get()
-		self.borrar_tabla(self.table_HistorialAlojamiento)
+		util.borra_Table(self.table_HistorialAlojamiento)
 		rows=self.obj_consultaN.consulta_DigitadosAlojamientoLike(param)
 		obj_Paciente=queryGalen()
 
