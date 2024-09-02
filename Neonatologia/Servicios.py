@@ -32,7 +32,9 @@ class Servicio():
 
 
 		label=Label(frameM,text=f"Pacientes Ingresados al servicio de {descrip_servicio}",fg="#131D52",bg="#828682",font=('Candara',16,'bold italic'))
-		label.grid(row=3,column=2,columnspan=20,pady=10)
+		label.grid(row=3,column=2,columnspan=20,pady=10)		
+		
+
 		style=ttk.Style()
 		style.theme_use("default")
 		style.configure("Treeview",background="silver",foreground="black",rowheight=25,fieldbackground="silver")
@@ -50,8 +52,9 @@ class Servicio():
 		self.table_IngresosRecepcionados.column("#5",width=100,anchor="w",stretch='NO')
 		self.table_IngresosRecepcionados.heading("#6",text="ID")
 		self.table_IngresosRecepcionados.column("#6",width=0,anchor="w",stretch='NO')							
-		self.table_IngresosRecepcionados.grid(row=4,column=2,padx=10,pady=2,columnspan=20)		
-		self.llenar_Tabla()
+		self.table_IngresosRecepcionados.grid(row=4,column=2,padx=10,pady=2,columnspan=20)
+
+		self.llenar_Tabla()		
 
 		self.btnIngreso=ttk.Button(frameM,text="Recepcionar")
 		self.btnIngreso.grid(row=5,column=9,pady=10)
@@ -62,7 +65,8 @@ class Servicio():
 		self.btnEliminar['command']=self.Revertir_Transferencia	
 
 		label=Label(frameM,text="Pacientes por dar de Alta",fg="#131D52",font=('Candara',16,'bold italic'))
-		label.grid(row=6,column=2,columnspan=20,pady=10)
+		label.grid(row=6,column=2,columnspan=20,pady=10)		
+
 		self.table_PacientesAlta=ttk.Treeview(frameM,columns=('#1','#2','#3','#4','#5','#6'),show='headings')
 		self.table_PacientesAlta.heading("#1",text="DNI MADRE")
 		self.table_PacientesAlta.column("#1",width=80,anchor="w",stretch='NO')
@@ -76,26 +80,43 @@ class Servicio():
 		self.table_PacientesAlta.column("#5",width=100,anchor="w",stretch='NO')
 		self.table_PacientesAlta.heading("#6",text="CODRN")
 		self.table_PacientesAlta.column("#6",width=0,anchor="w",stretch='NO')						
-		self.table_PacientesAlta.grid(row=6,column=2,padx=10,pady=2,columnspan=20)		
+		self.table_PacientesAlta.grid(row=6,column=2,padx=10,pady=2,columnspan=20)
+				
 		self.llenar_TablaAlta()
+
+		from Neonatologia import VistaServicios
+		obj_Vista=VistaServicios.Vista()
+		
+		self.menu=Menu(frameM,tearoff=0)
+		self.menu.add_command(label="detalle...",command=lambda:obj_Vista.TopDetalle(self.table_PacientesAlta))
+
+		self.table_PacientesAlta.bind("<Button-3>",lambda event:self.EventMenu(event,self.table_PacientesAlta,self.menu))
 
 		self.btnAlta=ttk.Button(frameM,text="Alta")
 		self.btnAlta.grid(row=7,column=9,pady=10)
 		self.btnAlta['command']=self.Top_DatosAlta
 	
-	def Revertir_Transferencia(self):
-		if messagebox.askquestion(message="¿Estas seguro que desea eliminar?",title="Eliminar"):
-			Id_ingreso=util.get_dataTable(self.table_IngresosRecepcionados,5)
-			codigoAnterior=self.obj_ConsultaNeo.get_IdentificadorTable('DATOS_INGRESO','Id_DATOSINGRESO',Id_ingreso,'Id_Asociado')[0].Id_Asociado
-			'''eliminando...'''
-			self.obj_ConsultaNeo.DeleteItemTable('DXNEO','Id_DATOSINGRESO',Id_ingreso)
-			self.obj_ConsultaNeo.DeleteItemTable('DATOS_INGRESO','Id_DATOSINGRESO',Id_ingreso)
+	def EventMenu(self,event,table,menu):
+		item=table.identify_row(event.y)
+		table.selection_set(item)
+		menu.post(event.x_root,event.y_root)
 
-			#actualizando...
-			parametros={'ESTADO':0}		
-			self.obj_ConsultaNeo.Update_DataTables('DATOS_INGRESO',parametros,'Id_DATOSINGRESO',codigoAnterior)
-			messagebox.showinfo('Alerta!!','Se eliminó correctamente!!')
-			self.llenar_Tabla()
+	def Revertir_Transferencia(self):
+		if self.table_IngresosRecepcionados.selection():
+			if messagebox.askquestion(message="¿Estas seguro que desea eliminar?",title="Eliminar"):
+				Id_ingreso=util.get_dataTable(self.table_IngresosRecepcionados,5)
+				codigoAnterior=self.obj_ConsultaNeo.get_IdentificadorTable('DATOS_INGRESO','Id_DATOSINGRESO',Id_ingreso,'Id_Asociado')[0].Id_Asociado
+				'''eliminando...'''
+				self.obj_ConsultaNeo.DeleteItemTable('DXNEO','Id_DATOSINGRESO',Id_ingreso)
+				self.obj_ConsultaNeo.DeleteItemTable('DATOS_INGRESO','Id_DATOSINGRESO',Id_ingreso)
+
+				#actualizando...
+				parametros={'ESTADO':0}		
+				self.obj_ConsultaNeo.Update_DataTables('DATOS_INGRESO',parametros,'Id_DATOSINGRESO',codigoAnterior)
+				messagebox.showinfo('Alerta!!','Se eliminó correctamente!!')
+				self.llenar_Tabla()
+		else:
+			messagebox.showerror('Error!!','Seleccione un Item!!')
 
 	def llenar_Tabla(self):
 		util.borra_Table(self.table_IngresosRecepcionados)						
@@ -113,59 +134,62 @@ class Servicio():
 	
 		for valor in rows:
 			rowsDatosMadre=self.obj_Galen.query_datosPaciente(valor.DNI)
-			rowsDatosNacido=self.obj_Galen.query_PacienteXHCL(valor.HC)			
-			datosnacido=rowsDatosNacido[0].PrimerNombre+" "+rowsDatosNacido[0].ApellidoPaterno+" "+rowsDatosNacido[0].ApellidoMaterno
-			self.table_PacientesAlta.insert('','end',values=(valor.DNI,rowsDatosMadre[0].PrimerNombre+" "+rowsDatosMadre[0].ApellidoPaterno+" "+rowsDatosMadre[0].ApellidoMaterno,valor.HC,datosnacido,valor.Id_DATOSINGRESO,valor.ID_INGRESO))
+			rowsDatosNacido=self.obj_Galen.query_PacienteXHCL(valor.HC)
+			if rowsDatosNacido:			
+				datosnacido=rowsDatosNacido[0].PrimerNombre+" "+rowsDatosNacido[0].ApellidoPaterno+" "+rowsDatosNacido[0].ApellidoMaterno
+				self.table_PacientesAlta.insert('','end',values=(valor.DNI,rowsDatosMadre[0].PrimerNombre+" "+rowsDatosMadre[0].ApellidoPaterno+" "+rowsDatosMadre[0].ApellidoMaterno,valor.HC,datosnacido,valor.Id_DATOSINGRESO,valor.ID_INGRESO))
 
 	def Top_DatosIngreso(self):
-		self.TopIngreso=Toplevel()
-		self.TopIngreso.title("Datos de Ingreso")
-		self.TopIngreso.geometry("500x300")
-		self.TopIngreso.iconbitmap('img/ingreso.ico')
-		self.TopIngreso.resizable(0,0)
-		self.TopIngreso.grab_set()
+		if self.table_IngresosRecepcionados.selection():
+			self.TopIngreso=Toplevel()
+			self.TopIngreso.title("Datos de Ingreso")
+			self.TopIngreso.geometry("500x300")
+			self.TopIngreso.iconbitmap('img/ingreso.ico')
+			self.TopIngreso.resizable(0,0)
+			self.TopIngreso.grab_set()
 		
-		label=Label(self.TopIngreso,text="Fecha Ingreso")
-		label.grid(row=1,column=1,pady=10)
-		self.FechaIngreso=DateEntry(self.TopIngreso,selectmode='day',date_pattern='yyyy-MM-dd')
-		self.FechaIngreso.grid(row=1,column=2,pady=10)
+			label=Label(self.TopIngreso,text="Fecha Ingreso")
+			label.grid(row=1,column=1,pady=10)
+			self.FechaIngreso=DateEntry(self.TopIngreso,selectmode='day',date_pattern='yyyy-MM-dd')
+			self.FechaIngreso.grid(row=1,column=2,pady=10)
 
-		label=Label(self.TopIngreso,text="Hora")
-		label.grid(row=1,column=3,pady=10,padx=10)
-		self.time_Ingreso=SpinTimePickerModern(self.TopIngreso)
-		self.time_Ingreso.addAll(constants.HOURS24)
-		self.time_Ingreso.setMins(str(self.timeDate).split(":")[1])
-		self.time_Ingreso.set24Hrs(str(self.timeDate).split(":")[0])
-		self.time_Ingreso.configureAll(bg="#404040", height=1, fg="#ffffff", font=("Times", 16), hoverbg="#404040",hovercolor="#d73333", clickedbg="#2e2d2d", clickedcolor="#d73333")
-		self.time_Ingreso.configure_separator(bg="#404040",fg="#fff")
-		self.time_Ingreso.grid(row=1,column=4,padx=10,pady=10)
+			label=Label(self.TopIngreso,text="Hora")
+			label.grid(row=1,column=3,pady=10,padx=10)
+			self.time_Ingreso=SpinTimePickerModern(self.TopIngreso)
+			self.time_Ingreso.addAll(constants.HOURS24)
+			self.time_Ingreso.setMins(str(self.timeDate).split(":")[1])
+			self.time_Ingreso.set24Hrs(str(self.timeDate).split(":")[0])
+			self.time_Ingreso.configureAll(bg="#404040", height=1, fg="#ffffff", font=("Times", 16), hoverbg="#404040",hovercolor="#d73333", clickedbg="#2e2d2d", clickedcolor="#d73333")
+			self.time_Ingreso.configure_separator(bg="#404040",fg="#fff")
+			self.time_Ingreso.grid(row=1,column=4,padx=10,pady=10)
 
-		label=Label(self.TopIngreso,text="Peso")
-		label.grid(row=2,column=1,pady=10)
-		self.entry_PesoE=ttk.Spinbox(self.TopIngreso,from_=100,to=4000,increment=100)
-		self.entry_PesoE.grid(row=2,column=2,pady=10)
+			label=Label(self.TopIngreso,text="Peso")
+			label.grid(row=2,column=1,pady=10)
+			self.entry_PesoE=ttk.Spinbox(self.TopIngreso,from_=100,to=4000,increment=100)
+			self.entry_PesoE.grid(row=2,column=2,pady=10)
 
-		label=Label(self.TopIngreso,text="Medico Resp")
-		label.grid(row=2,column=3,pady=10)
-		self.entry_MedicoResponsableIngreso=ttk.Entry(self.TopIngreso)
-		self.entry_MedicoResponsableIngreso.grid(row=2,column=4,pady=10)
-		self.entry_MedicoResponsableIngreso.bind("<Return>",lambda event:self.Search_Personal(event,"DOCTOR"))
+			label=Label(self.TopIngreso,text="Medico Resp")
+			label.grid(row=2,column=3,pady=10)
+			self.entry_MedicoResponsableIngreso=ttk.Entry(self.TopIngreso)
+			self.entry_MedicoResponsableIngreso.grid(row=2,column=4,pady=10)
+			self.entry_MedicoResponsableIngreso.bind("<Return>",lambda event:self.Search_Personal(event,"DOCTOR"))
 
-		label=Label(self.TopIngreso,text="Enf. Resp")
-		label.grid(row=3,column=1,pady=10)
-		self.entry_EnfermeraResponsableIngreso=ttk.Entry(self.TopIngreso)
-		self.entry_EnfermeraResponsableIngreso.grid(row=3,column=2,pady=10)
-		self.entry_EnfermeraResponsableIngreso.bind("<Return>",lambda event:self.Search_Personal(event,"ENFERMERA"))
+			label=Label(self.TopIngreso,text="Enf. Resp")
+			label.grid(row=3,column=1,pady=10)
+			self.entry_EnfermeraResponsableIngreso=ttk.Entry(self.TopIngreso)
+			self.entry_EnfermeraResponsableIngreso.grid(row=3,column=2,pady=10)
+			self.entry_EnfermeraResponsableIngreso.bind("<Return>",lambda event:self.Search_Personal(event,"ENFERMERA"))
 
-		label=Label(self.TopIngreso,text="Tecnico Resp")
-		label.grid(row=3,column=3,pady=10)
-		self.entry_TecnicoResponsableIngreso=ttk.Entry(self.TopIngreso)
-		self.entry_TecnicoResponsableIngreso.grid(row=3,column=4,pady=10)
-		
+			label=Label(self.TopIngreso,text="Tecnico Resp")
+			label.grid(row=3,column=3,pady=10)
+			self.entry_TecnicoResponsableIngreso=ttk.Entry(self.TopIngreso)
+			self.entry_TecnicoResponsableIngreso.grid(row=3,column=4,pady=10)		
 
-		buttonAdd=ttk.Button(self.TopIngreso,text="Aceptar")
-		buttonAdd.grid(row=5,column=2,columnspan=2,pady=10)
-		buttonAdd['command']=self.insert_DatosIngreso
+			buttonAdd=ttk.Button(self.TopIngreso,text="Aceptar")
+			buttonAdd.grid(row=5,column=2,columnspan=2,pady=10)
+			buttonAdd['command']=self.insert_DatosIngreso
+		else:
+			messagebox.showerror('Error!!','Seleccione un Item!!')
 
 
 	def Search_Personal(self,event,identificador):

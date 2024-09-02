@@ -17,11 +17,12 @@ import Incidencias
 import His_Main
 from HisReporteGeneral import ReporteHis
 from alerta import Alerta
-import threading
+#import threading
 import time
 from Nacidos.ReporteAirn import Reporte
 from ModifyIcon import modificar_Icon
 from VPerfil import Perfiles
+import calendar
 
 class Ventana_Principal(object):
 	
@@ -31,6 +32,7 @@ class Ventana_Principal(object):
 		self.nivel=nivel
 		self.dni=dni
 		self.letra_leyenda=('Candara',16,'bold italic')
+		self.root=root
 		addressIcon="img/menue/"
 		##creando punteros a las consultas
 		self.obj_QueryGalen=Consulta_Galen.queryGalen()
@@ -42,14 +44,13 @@ class Ventana_Principal(object):
 		
 		#self.ventana=Tk()
 		self.ventana=Toplevel()
-
 		self.ventana.title('Sistema de produccion HSRA')		
 		self.ventana.iconbitmap('img/doctor.ico')		
 		self.height=self.ventana.winfo_screenheight()
 		self.width=self.ventana.winfo_screenwidth()		
 		self.ventana.geometry("%dx%d" % (self.width,self.height))
 		self.ventana.protocol("WM_DELETE_WINDOW", root.destroy)
-		#self.ventana.protocol('WM_DELETE_WINDOW',self.salir)
+		
 		#frame principal
 		self.Frame_Principal=Frame(self.ventana,bg='#828682',width=self.width,height=self.height)
 		self.Frame_Principal.pack()
@@ -109,6 +110,11 @@ class Ventana_Principal(object):
 		addressIcon="img/menue/"
 		self.IcLUser=modificar_Icon(addressIcon+"ListUser.png")
 		self.M_Usuario.add_command(label='Reporte Usuario',command=self.Reporte_Usuarios,image=self.IcLUser,compound="left")
+
+	def Configurar_CantidadCupos(self):
+		addressIcon="img/menue/"
+		self.NCupos=modificar_Icon(addressIcon+"cupos.png")		
+		self.M_Usuario.add_command(label='Cantidad Cupos',command=self.Frame_ConfCupos,image=self.NCupos,compound="left")
 
 	def ReportCitas(self):
 		addressIcon="img/menue/"
@@ -194,7 +200,7 @@ class Ventana_Principal(object):
 		self.M_Paciente.add_command(label='Listar pacientes',command=self.Listar_Pacientes)
 
 	def EstadisticaTriaje(self):
-		self.M_Estadistica.add_command(label='Estadisticas Triaje')
+		self.M_Estadistica.add_command(label='Estadisticas Triaje',command=self.Estadistica_Triaje)
 
 	#########fin menues##############
 
@@ -205,6 +211,12 @@ class Ventana_Principal(object):
 		self.Frame_Perfiles.pack_propagate(False)
 		obj_perfil=Perfiles()
 		obj_perfil.Frame_perfiles(self.Frame_Perfiles,self.width,self.height)
+
+	#APARTADO DE CONFIGURACION DE CUPOS
+	def Frame_ConfCupos(self):
+		from ConfiguracionT.cupos import TCupos
+		obj_cupos=TCupos(self.Frame_Principal,self.Usuario,self.height,self.width)
+		obj_cupos.Contenedor()
 
 	#APARTADO NEONATOLOGIA
 	def Frame_DatosGenerales(self):		
@@ -272,9 +284,10 @@ class Ventana_Principal(object):
 	def mensaje_Info(self,iden):
 		
 		if iden=='INFORMACION':
-			messagebox.showinfo('Notificación',f"""Sistema de citas de consultorio externo y Digitacion HIS, desarrollado\npor la Unidad de Estadística e Informática, a traves de la oficina\nde Desarrollo y Programacion del HOSPITAL SUB REGIONAL DE ANDAHUAYLAS...\nTodos los derechos resevados© Andahuaylas 2022\nby Jaime Navarro Crúz""")
+			strinfo=f"""Sistema de citas de consultorio externo y Digitacion HIS,desarrollado por la Unidad de Estadística e Informática, a traves de la oficina de Desarrollo y Programacion del HOSPITAL SUB REGIONAL DE ANDAHUAYLAS... Todos los derechos resevados© Andahuaylas 2022 by Jaime Navarro Crúz"""
+			messagebox.showinfo('Notificación',strinfo)
 		elif iden=='VERSION':
-			messagebox.showinfo('Notificación',f"""SISTEMA DE CITAS DE CONSULTORIO EXTERNO Y PRODUCCION HIS.\nversion 1.6""")
+			messagebox.showinfo('Notificación',f"""SISTEMA DE CITAS DE CONSULTORIO EXTERNO Y PRODUCCION HIS.\nversion 1.7""")
 
 	
 	def Desk_User(self):		
@@ -292,6 +305,11 @@ class Ventana_Principal(object):
 		self.Frame_incidencias.pack_propagate(False)
 		obj_incidencia=Incidencias.IncidenciasV(self.Usuario)
 		obj_incidencia.Incidencias(self.Frame_incidencias,self.width,self.height)
+
+	def Estadistica_Triaje(self):
+		from Estadisticas import ETriaje
+		objTriaje=ETriaje.Triaje_Estadisticas(self.width,self.height,self.Usuario,self.Frame_Principal,self.ventana)
+		objTriaje.FramePrincipal()	
 
 
 	def Frame_ProduccionHIS(self):
@@ -326,10 +344,16 @@ class Ventana_Principal(object):
 		scroll_bar.configure(command=self.Lista_Menu.yview)
 		#AGREGO PANEL PRINCIPAL		
 
-		self.Frame_TriajeP=Frame(self.F_Triaje,width=int(self.width*0.80),height=int(self.height*0.80),bg='#828682',relief="sunken",bd=4)
+		self.Frame_TriajeP=Frame(self.F_Triaje,width=int(self.width*0.80),height=int(self.height*0.65),bg='#828682',relief="solid",bd=1)
 		
-		self.Frame_TriajeP.place(x=int(self.width*0.16)+10,y=0)		
-		#agrego label		
+		self.Frame_TriajeP.place(x=int(self.width*0.16)+10,y=0)
+		self.Frame_TriajeP.grid_propagate(False)
+		
+		#Agrego programacion
+		self.ConsultorioP=Frame(self.F_Triaje,width=int(self.width*0.80),height=int(self.height*0.16),bg='#828682',relief="solid",bd=1)		
+		self.ConsultorioP.place(x=int(self.width*0.16)+10,y=int(self.height*0.66))
+		self.ConsultorioP.grid_propagate(False)			
+		
 		#menu agregar y eliminar
 		self.menu_right=Menu(self.Frame_TriajeP,tearoff=0)
 		self.menu_right.add_command(label='Atencion Normal',command=lambda:self.evento_agregar(1))
@@ -363,14 +387,11 @@ class Ventana_Principal(object):
 
 		etiqueta_Leyenda=Label(self.frame_Leyenda,text='SALUDPOL',fg='#9D8F06',bg='black',font=self.letra_leyenda)
 		etiqueta_Leyenda.grid(row=1,column=9,padx=5)
-		styl = ttk.Style()
-		#styl.configure('white.TSeparator', background='white')
+		styl = ttk.Style()		
 
-		etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='white',bg='#2AA3D0',font=self.letra_leyenda)
-		#etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='white',bg='#080E66',font=self.letra_leyenda)
+		etiqueta_Leyenda=Label(self.frame_Leyenda,text='ANULADO',fg='#080E66',font=self.letra_leyenda)		
 		etiqueta_Leyenda.grid(row=1,column=10,padx=5)
-		styl = ttk.Style()
-		#styl.configure('white.TSeparator', background='white')
+		styl = ttk.Style()		
 
 		styl = ttk.Style()
 		styl.configure('white.TSeparator', background='white')
@@ -412,7 +433,6 @@ class Ventana_Principal(object):
 		etiqueta_Usuario.grid(row=0,column=34)
 		etiqueta_Usuario=Label(self.frame_Leyenda,text=f'{self.Usuario}',fg='white',bg='black',font=self.letra_leyenda)
 		etiqueta_Usuario.grid(row=0,column=35)	
-
 		self.frame_Leyenda.place(x=0,y=int(self.height*0.84))
 
 	def evento_clickRight(self,event):
@@ -424,13 +444,12 @@ class Ventana_Principal(object):
 				consultorio_Total=self.Lista_Menu.get(self.Lista_Menu.curselection()[0])
 				consultorio=consultorio_Total[consultorio_Total.find('_')+1:]				
 				#consultar si el cupo esta agendado			
-				rows=self.obj_QueryTriaje.query_CupoNumber(self.calendario.selection_get(),consultorio,self.cupo_,self.turno,self.Medico_Datos)
+				rows=self.obj_QueryTriaje.query_CupoNumber(self.calendario.selection_get(),consultorio,self.cupo_,self.turno,self.Dni_Medico)
 				controlador=0
-				for v in rows:
-					controlador=v.Id_Etriaje				
 
-				if len(rows)==1:
-					
+				for v in rows:
+					controlador=v.Id_Etriaje
+				if len(rows)==1:					
 					date=datetime.date.today()
 					if self.calendario.selection_get()<date:							
 						if controlador==1:
@@ -458,12 +477,40 @@ class Ventana_Principal(object):
 		lambda event:self.Generate_Cupos(event)
 		date=datetime.date.today()
 		obj_TopTriaje=None
-		if self.calendario.selection_get()>=date:									
-			obj_TopTriaje=Top_Triaje.Triaje()
-			obj_TopTriaje.Top_Agregar(globals()['self.cupo%s'%self.cupo_],self.servicio,self.Medico_Datos,self.Usuario,self.calendario.selection_get(),self.turno,Tipocupo)		
+		datos_M=self.obj_QueryGalen.query_Programacion(self.calendario.selection_get())		
+		consulta_datos_Medico=self.obj_QueryGalen.datos_EmpleadosConsultorioExt(self.Dni_Medico.strip())
+		
+		rows_cupos_count=self.obj_QueryTriaje.ConsultaConfCupos(consulta_datos_Medico[0].IdMedico,self.idservicio,self.turno,self.calendario.selection_get())
+		if Tipocupo==1:
+			if rows_cupos_count:
+				year=self.calendario.selection_get().year
+				month=self.calendario.selection_get().month
+				_,num_days=calendar.monthrange(year,month)
+				rows_cupos_Agendados=self.obj_QueryTriaje.ConsultaCountCuposXdia(self.Dni_Medico.strip(),self.idservicio,self.turno,1,self.calendario.selection_get())
+		
+				#terminar aqui				
+				Totalcupos=rows_cupos_count[0].Cantidad
+				AgendadosCupos=rows_cupos_Agendados[0].cantidad							
+				if int(AgendadosCupos)<int(Totalcupos):
+					if self.calendario.selection_get()>=date:									
+						obj_TopTriaje=Top_Triaje.Triaje()
+						obj_TopTriaje.Top_Agregar(globals()['self.cupo%s'%self.cupo_],self.servicio,self.Medico_Datos,self.Usuario,self.calendario.selection_get(),self.turno,Tipocupo,self.idservicio,self.Dni_Medico)		
+					else:
+						messagebox.showinfo('Alerta','No se puede programar para esta fecha!')
+				else:
+					messagebox.showerror('Error!!','No hay cupos disponibles!!')
+			
+			else:
+				messagebox.showerror('Error','Debe configurar la cantidad de cupos a atender!!')
 		else:
-			messagebox.showinfo('Alerta','No se puede programar para esta fecha!')
-		#globals()['self.cupo%s'%self.cupo_].configure(bg='green')	
+			if self.calendario.selection_get()>=date:									
+				obj_TopTriaje=Top_Triaje.Triaje()
+				obj_TopTriaje.Top_Agregar(globals()['self.cupo%s'%self.cupo_],self.servicio,self.Medico_Datos,self.Usuario,self.calendario.selection_get(),self.turno,Tipocupo,self.idservicio,self.Dni_Medico)		
+			else:
+				messagebox.showinfo('Alerta','No se puede programar para esta fecha!')
+
+
+
 	def evento_EliminarCupo(self):		
 		result=messagebox.askquestion('Alerta','Estas seguro de que desea anular el cupo\n recuerda que una vez anulada no podrá revertirse')
 		if result=='yes':
@@ -488,8 +535,9 @@ class Ventana_Principal(object):
 			btn_cancelar.grid(row=2,column=3,pady=10)
 	def evento_ImprimirCupo(self):		
 		consultorio_Total=self.Lista_Menu.get(self.Lista_Menu.curselection()[0])
-		consultorio=consultorio_Total[consultorio_Total.find('_')+1:]	
-		rows=self.obj_QueryTriaje.query_DataTriaje(self.calendario.selection_get(),consultorio,self.cupo_,self.Medico_Datos,self.turno)
+		consultorio=consultorio_Total[:consultorio_Total.find(':')]
+			
+		rows=self.obj_QueryTriaje.query_DataTriaje(self.calendario.selection_get(),consultorio,self.cupo_,self.Dni_Medico,self.turno)
 		for val in rows:
 			dni=val.dni
 			fuente=val.fuente
@@ -509,8 +557,8 @@ class Ventana_Principal(object):
 
 	def evento_ConsultaCupo(self):		
 		consultorio_Total=self.Lista_Menu.get(self.Lista_Menu.curselection()[0])
-		consultorio=consultorio_Total[int(consultorio_Total.find('_'))+1:]
-		rows=self.obj_QueryTriaje.query_DataTriaje(self.calendario.selection_get(),consultorio,self.cupo_,self.Medico_Datos,self.turno)		
+		consultorio=consultorio_Total[:int(consultorio_Total.find(':'))]		
+		rows=self.obj_QueryTriaje.query_DataTriaje(self.calendario.selection_get(),consultorio,self.cupo_,self.Dni_Medico,self.turno)		
 		for val in rows:
 			dni=val.dni
 			fuente=val.fuente
@@ -525,6 +573,7 @@ class Ventana_Principal(object):
 			usuario=val.Usuario
 			fechaR=str(val.FechaR)[:16]
 			estado=val.estado
+
 		self.obj_Impresion.imprimir_Cupo(dni,fuente,cupo,medico,consultorio,nro_Referencia,fecha_A,Historia,establecimiento,turno,usuario,fechaR,estado)
 		obj_TopReporte=Top_Reporte.Reporte()
 		obj_TopReporte.top_ConsultaCupo()
@@ -535,26 +584,35 @@ class Ventana_Principal(object):
 			self.Lista_Menu.delete(0,'end')
 			rows=self.obj_QueryGalen.query_Programacion(self.calendario.selection_get())
 			for val in rows:
-				self.Lista_Menu.insert(0,str(val.IdTurno)+'-'+str(val.IdMedico)+'_'+val.Nombre)
+				self.Lista_Menu.insert(0,str(val.IdServicio)+':'+str(val.IdTurno)+'-'+str(val.IdMedico)+'_'+val.Nombre)
 		except Exceptions as e:
 			messagebox.showinfo('Alerta',f'Error {e}')
 
 	def calendar_event(self,event):		
 		self.llenar_Menu()
 
-	def Generate_Cupos(self,event):		
+	def Generate_Cupos(self,event):
+		from Util import ProgramacionEspecialidad				
 		try:
 			data_lista=self.Lista_Menu.get(self.Lista_Menu.curselection()[0])
-			self.turno_codi=data_lista[:data_lista.find('-')]
+			self.idservicio=data_lista[:data_lista.find(':')]
+			self.turno_codi=data_lista[data_lista.find(':')+1:data_lista.find('-')]
 			self.IdMedico=data_lista[data_lista.find('-')+1:data_lista.find('_')]						
-			self.servicio=data_lista[data_lista.find('_')+1:]						
+			self.servicio=data_lista[data_lista.find('_')+1:]
+
+			#rol
+			obj_programacion=ProgramacionEspecialidad.ProgEspecialidad(self.ConsultorioP,self.width,self.height)
+			obj_programacion.Programacion(self.calendario.selection_get(),self.idservicio)
+
 			letra=('Arial',18,'bold')			
 			medico=self.obj_QueryGalen.consulta_Medico_Responsable(self.servicio,self.calendario.selection_get(),self.IdMedico,self.turno_codi)	
+			
 			for val in medico:
 				self.Medico_Datos=val.Nombres+" "+val.ApellidoPaterno+" "+val.ApellidoMaterno
 				self.turno=val.Descripcion
+				self.Dni_Medico=val.DNI.strip()
 
-			rows=self.obj_QueryTriaje.query_Cupo(self.calendario.selection_get(),self.servicio,self.Medico_Datos,self.turno)
+			rows=self.obj_QueryTriaje.query_Cupo(self.calendario.selection_get(),self.servicio,self.Dni_Medico,self.turno)
 			lista_cupos=[]
 			lista_anulados=[]
 			lista_adicionales=[]
@@ -570,52 +628,47 @@ class Ventana_Principal(object):
 				for j in range(9):
 					if Nro_Cupo in lista_cupos:
 						if  Nro_Cupo in lista_anulados:
-							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='#080E66',fg='white',borderwidth=2,relief="ridge",font=letra)
+							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='#080E66',fg='white',borderwidth=2,relief="ridge",font=letra)
 							globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
 							globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)
 										
 						elif Nro_Cupo in lista_adicionales:
-							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='#340563',fg='white',borderwidth=2,relief="ridge",font=letra)
+							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='#340563',fg='white',borderwidth=2,relief="ridge",font=letra)
 							globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
 							globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)
 
 						else:
 							if Nro_Cupo<=30:
-								globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='red',fg='white',borderwidth=2,relief="ridge",font=letra)
+								globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='red',fg='white',borderwidth=2,relief="ridge",font=letra)
 								globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
 								globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)							
 							elif Nro_Cupo>30:
-								globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='#128385',fg='red',borderwidth=2,relief="ridge",font=letra)
+								globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='#128385',fg='red',borderwidth=2,relief="ridge",font=letra)
 								globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
-								globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)							
-
-
+								globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)
 					else:
 						if Nro_Cupo<=30:
-							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='#185522',fg='white',borderwidth=2,relief="ridge",font=letra)
+							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='#185522',fg='white',borderwidth=2,relief="ridge",font=letra)
 							globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
 							globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)						
 						elif Nro_Cupo>30:
-							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=8,height=5,bg='#9D8F06',fg='white',relief="ridge",borderwidth=2,font=letra)
+							globals()['self.cupo%s'%Nro_Cupo]=Label(self.Frame_TriajeP,text=Nro_Cupo, width=7,height=4,bg='#9D8F06',fg='white',relief="ridge",borderwidth=2,font=letra)
 							globals()['self.cupo%s'%Nro_Cupo].bind('<Button-3>',self.evento_clickRight)
 							globals()['self.cupo%s'%Nro_Cupo].grid(row=i,column=j, padx=7,pady=7)
-
-					Nro_Cupo+=1				
-
+					Nro_Cupo+=1	
 			self.etiqueta_Turno1.configure(text=f'{self.turno}')
 			self.etiqueta_Medico.configure(text=f'Medico : {self.Medico_Datos}')
 			self.etiqueta_servicio.configure(text=f'Consultorio : {self.servicio}')
 		except Exception as e:
 			print(e)	
 
-	def Reporte_Cita(self):
-		
-		obj_Reporte=Top_Reporte.Reporte()
-		#pacientes
+	def Reporte_Cita(self):		
+		obj_Reporte=Top_Reporte.Reporte()		
 		obj_Reporte.Top_Reporte()
 	def Agregar_Pacientes(self):		
 		obj_TopPaciente=Top_Paciente.Paciente()
 		obj_TopPaciente.Top_Agregar()
+
 	def Listar_Pacientes(self):		
 		obj_TopPaciente=Top_Paciente.Paciente()
 		obj_TopPaciente.paciente_Visualizacion()
@@ -630,4 +683,4 @@ class Ventana_Principal(object):
 			ventana.destroy()
 		else:
 			messagebox.showinfo('Notificación','Ingrese al menos 10 caracteres en el campo motivo de anulación')
-				
+	

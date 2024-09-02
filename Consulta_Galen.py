@@ -9,7 +9,9 @@ class queryGalen(object):
 		cursor=obj_conectar.get_cursor()
 		try:
 			rows=[]
-			sql=f"""SELECT Nombre,IdMedico,IdTurno FROM ProgramacionMedica AS P  INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio  AND P.Fecha=CONVERT(date,'{fecha}') ORDER BY Nombre ASC"""						
+			sql=f"""SELECT S.IdServicio,Nombre,IdMedico,IdTurno FROM ProgramacionMedica AS P  
+			INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio  
+			AND P.Fecha=CONVERT(date,'{fecha}') ORDER BY Nombre ASC"""						
 			cursor.execute(sql)
 			rows=cursor.fetchall()			
 			
@@ -18,7 +20,68 @@ class queryGalen(object):
 		finally:
 			cursor.close()
 			obj_conectar.close_conection()
-			return rows			
+			return rows	
+
+	def query_ProgramacionServicios(self,fechaI,fechaF,idEspe):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT S.IdServicio,Nombre,IdMedico,T.Descripcion,CONVERT(date,P.Fecha) AS fecha FROM 
+			ProgramacionMedica AS P  INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio INNER JOIN Turnos 
+			AS T ON P.IdTurno=T.IdTurno WHERE  P.Fecha BETWEEN CONVERT(date,'{fechaI}') AND CONVERT(date,'{fechaF}') 
+			AND S.IdEspecialidad={idEspe}"""
+								
+			cursor.execute(sql)
+			rows=cursor.fetchall()			
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows	
+	def queryMedicoEspecialidad(self,fechaI,fechaF,idservicio):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f'''SELECT EMPLE.DNI,EMPLE.Nombres,EMPLE.ApellidoPaterno,EMPLE.ApellidoMaterno,CONVERT(DATE,P.Fecha)AS Fecha,T.Codigo FROM ProgramacionMedica AS P INNER JOIN Servicios AS S ON P.IdServicio=S.IdServicio
+			INNER JOIN Medicos AS MED ON P.IdMedico=MED.IdMedico INNER JOIN Empleados AS EMPLE ON MED.IdEmpleado=EMPLE.IdEmpleado INNER JOIN 
+			(SELECT DISTINCT IdEspecialidad FROM ProgramacionMedica WHERE IdServicio={idservicio}) AS SubQ ON P.IdEspecialidad=SubQ.IdEspecialidad INNER JOIN Turnos AS T ON P.IdTurno=T.IdTurno
+			WHERE  CONVERT(DATE,Fecha) BETWEEN '{fechaI}' AND '{fechaF}' '''
+			cursor.execute(sql)
+			rows=cursor.fetchall()	
+		except Exception as e:
+			raise e
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+
+	def query_ProgramacionEspecialidad(self,fechaI,fechaF):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT ESPE.IdEspecialidad,ESPE.Nombre AS especialidad FROM ProgramacionMedica AS P  
+			INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio INNER JOIN Especialidades AS ESPE ON S.IdEspecialidad=ESPE.IdEspecialidad  
+			WHERE P.Fecha BETWEEN CONVERT(date,'{fechaI}') AND CONVERT(date,'{fechaF}') 
+			GROUP BY ESPE.IdEspecialidad, ESPE.Nombre  ORDER BY ESPE.Nombre DESC
+			"""						
+			cursor.execute(sql)
+			rows=cursor.fetchall()			
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows	
 
 	def query_Paciente(self,dni):
 		obj_conectar=conect_bd.Conexion_Galen()
@@ -65,9 +128,13 @@ class queryGalen(object):
 		try:
 			rows=[]
 			sql=f"""
-			SELECT E.Nombres,E.ApellidoPaterno,E.ApellidoMaterno,TUR.Descripcion FROM ProgramacionMedica AS P  INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio AND P.Fecha=CONVERT(date,'{fecha}') AND
+			SELECT E.DNI,E.Nombres,E.ApellidoPaterno,E.ApellidoMaterno,TUR.Descripcion 
+			FROM ProgramacionMedica AS P  INNER JOIN Servicios as S ON P.IdServicio=S.IdServicio 
+			AND P.Fecha=CONVERT(date,'{fecha}') AND
 			S.Nombre='{servicio}' AND P.IdMedico='{idmedico}'
- 			INNER JOIN Medicos as M ON  P.IdMedico=M.IdMedico INNER JOIN Empleados AS E ON M.IdEmpleado=E.IdEmpleado INNER JOIN Turnos as TUR ON P.IdTurno=TUR.IdTurno AND TUR.IdTurno='{turno}'
+ 			INNER JOIN Medicos as M ON  P.IdMedico=M.IdMedico INNER JOIN Empleados AS 
+ 			E ON M.IdEmpleado=E.IdEmpleado INNER JOIN Turnos as TUR ON P.IdTurno=TUR.IdTurno AND
+ 			 TUR.IdTurno='{turno}'
 			"""						
 			cursor.execute(sql)
 			rows=cursor.fetchall()	
@@ -148,6 +215,22 @@ class queryGalen(object):
 			obj_conectar.close_conection()
 			return rows
 		
+	def query_TipoTurnos(self,id_turno):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			cursor.execute(f"""SELECT * FROM Turnos WHERE IdTurno={id_turno}""")
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
 	def query_EspecialidadesCEXT(self):
 		obj_conectar=conect_bd.Conexion_Galen()
 		obj_conectar.ejecutar_conn()
@@ -387,8 +470,10 @@ class queryGalen(object):
 		try:
 			rows=[]	
 			
-			sql=f"""SELECT DISTINCT P.NroDocumento,P.PrimerNombre,P.SegundoNombre,P.ApellidoPaterno,P.ApellidoMaterno,P.NroHistoriaClinica FROM Atenciones AS AT INNER JOIN 
-					Pacientes AS P ON AT.IdPaciente=P.IdPaciente WHERE AT.IdTipoServicio=3 AND P.NroDocumento='{dni}' AND AT.IdTipoAlta IS NULL	"""
+			sql=f"""SELECT DISTINCT P.NroDocumento,P.PrimerNombre,P.SegundoNombre,P.ApellidoPaterno,
+			P.ApellidoMaterno,P.NroHistoriaClinica FROM Atenciones AS AT INNER JOIN 
+			Pacientes AS P ON AT.IdPaciente=P.IdPaciente WHERE AT.IdTipoServicio=3 AND 
+			P.NroDocumento='{dni}' AND AT.IdTipoAlta IS NULL"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
 			
@@ -473,6 +558,61 @@ class queryGalen(object):
 			cursor.close()
 			obj_conectar.close_conection()
 			return rows
+
+	def datos_EmpleadosConsultorioExt(self,dni):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT * FROM Empleados AS EMP INNER JOIN 
+			Medicos AS M ON M.IdEmpleado=EMP.IdEmpleado WHERE EMP.DNI='{dni}'"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	def datos_MedicoDNI(self,i_medico):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT * FROM Empleados AS EMP INNER JOIN 
+			Medicos AS M ON M.IdEmpleado=EMP.IdEmpleado WHERE M.IdMedico={i_medico}"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	def datos_Medicoss(self,medico):
+		obj_conectar=conect_bd.Conexion_Galen()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			rows=[]
+			sql=f"""SELECT DNI FROM Medicos AS M INNER JOIN Empleados AS EMPLE ON M.IdEmpleado=EMPLE.IdEmpleado 
+			WHERE EMPLE.Nombres+' '+EMPLE.ApellidoPaterno+' '+EMPLE.ApellidoMaterno='{medico}' """
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
 
 
 		

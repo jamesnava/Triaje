@@ -456,6 +456,7 @@ class DataHis:
 		obj_consulta=queryGalen()
 
 		rows=obj_consulta.query_Hospitalizados(dni)
+		
 		if len(rows):
 			rows_Distrito=obj_consulta.query_IdDistritoProcedencia(dni)
 			if rows_Distrito[0].NRO:

@@ -1,2 +1,3 @@
 from logl_ import Login as obj
-obj()
+if __name__=='__main__':
+	obj()

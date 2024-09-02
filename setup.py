@@ -1,8 +1,8 @@
-from cx_Freeze import setup,Executable
+from cx_Freeze import setup, Executable
 
 setup(
-	name="Sistema de produccion Hospitalaria",
-	version="1.7",
-	description="Sistema de produccion hospitalaria",
-	executables=[Executable("main.py")]
-	)
+    name="MiAplicacion",
+    version="0.1",
+    description="Una breve descripción de la aplicación",
+    executables=[Executable("main.py",base="Win32GUI",icon="desktop.ico")],
+)

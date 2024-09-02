@@ -63,6 +63,10 @@ class Perfiles(object):
 		check=Checkbutton(marcoTriaje,text="Envio de Mensajes",variable=self.checkWhatsApp)
 		check.grid(row=2,column=2,pady=5,padx=5)
 
+		self.checkCantidadCupos=BooleanVar()
+		check=Checkbutton(marcoTriaje,text='Confg. Cant. Cupos',variable=self.checkCantidadCupos)
+		check.grid(row=2,column=3,pady=5,padx=5)
+
 		marcoHis=LabelFrame(self.Frame_Perfil,text="His",borderwidth=2, relief="solid",width=int(width*0.5),height=int(height*0.4),bg="#949BAA")
 		marcoHis.grid(row=3,column=1)
 
@@ -177,11 +181,12 @@ class Perfiles(object):
 		'MReporteHis':int(self.ReporteHis.get()),'MDataHis':int(self.dataHis.get()),'AtencionAirn':int(self.Airn.get()),'NacidoAlojamiento':int(self.Alojamiento.get()),'ReporteNacidos':int(self.ReporteNacido.get()),
 		'DatosGeneralesNeo':int(self.DatosGeneralesNeo.get()),'IntermediosNeo':int(self.IntermedioNeo.get()),'PatologicosNeo':int(self.PatologicosNeo.get())
 		,'RecuperacionNeo':int(self.RecuperacionNeo.get()),'UcinNeo':int(self.Ucinneo.get()),'PacienteInsertar':int(self.IPaciente.get()),'PacienteListar':int(self.ListarPaciente.get()),'Tamizaje':int(self.tamizaje.get()),
-		'EstadisticaTriaje':int(self.EstadisticaTriaje.get())}
+		'EstadisticaTriaje':int(self.EstadisticaTriaje.get()),'Configurar_CantidadCupos':int(self.checkCantidadCupos.get())}
 		
 		
 		if self.table_Perfiles.selection():
 			IdRol=self.table_Perfiles.item(self.table_Perfiles.selection()[0],option='values')[0]
+
 			if not self.obj_Consulta.ExisteAsignacion(IdRol):
 				for clave in data:
 					self.obj_Consulta.InsertarAsignaciones(IdRol,clave,data[clave])

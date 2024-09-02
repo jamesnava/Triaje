@@ -94,9 +94,7 @@ class MadreN(object):
 		self.table_Airn.heading("#5",text="HCL NACIDO")
 		self.table_Airn.column("#5",width=200,anchor="w",stretch='NO')
 		self.table_Airn.heading("#6",text="AIR")
-		self.table_Airn.column("#6",width=0,anchor="w",stretch='NO')
-		#self.table_Airn.heading("#7",text="Id")
-		#self.table_Airn.column("#7",width=0,anchor="w",stretch='NO')						
+		self.table_Airn.column("#6",width=0,anchor="w",stretch='NO')								
 		self.table_Airn.grid(row=8,column=2,padx=10,pady=2,columnspan=20)
 
 		self.llenar_MadreNacido()
@@ -104,8 +102,7 @@ class MadreN(object):
 		self.table_Airn.bind("<Button-3>",lambda event:self.EventMenuUpdateAir(event,self.table_Airn,self.menu))
 
 		
-		Eliminar=ttk.Button(frameM,text="Eliminar",cursor="hand2")
-		#Eliminar["command"]=self.eliminarMadre
+		Eliminar=ttk.Button(frameM,text="Eliminar",cursor="hand2")		
 		Eliminar.grid(row=9,column=8,pady=5)
 
 		

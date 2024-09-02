@@ -12,9 +12,9 @@ class Triaje(object):
 		self.controlador=False
 		self.ventana_Triaje=None
 		self.btnAceptarphoto = PhotoImage(file ="img/aceptarbtn.png")
-		self.btnCancelphoto = PhotoImage(file ="img/btncancelar.png")		
-	def Top_Agregar(self,cupo,servicio,medico,usuario,fecha_Atencion,turno,tipocupo):
+		self.btnCancelphoto = PhotoImage(file ="img/btncancelar.png")
 
+	def Top_Agregar(self,cupo,servicio,medico,usuario,fecha_Atencion,turno,tipocupo,cod_servicio,dni_medico):
 		self.turno=turno
 		self.usuario=usuario
 		self.etiqueta_Cupo=cupo		
@@ -121,7 +121,7 @@ class Triaje(object):
 
 		
 		self.btn_Guardar=Button(self.ventana_Triaje,image=self.btnAceptarphoto,borderwidth=0,cursor='hand2')
-		self.btn_Guardar['command']=lambda:self.registrar_cita(tipocupo)
+		self.btn_Guardar['command']=lambda:self.registrar_cita(tipocupo,cod_servicio,dni_medico)
 		self.btn_Guardar.grid(row=10,column=1)		
 
 		self.btn_Cancelar=Button(self.ventana_Triaje,image=self.btnCancelphoto,borderwidth=0,cursor='hand2')
@@ -245,7 +245,7 @@ class Triaje(object):
 		self.Entry_HCL.configure(state='NORMAL')
 		self.Entry_NroReferencia.configure(state='NORMAL')
 
-	def registrar_cita(self,tipocupo):
+	def registrar_cita(self,tipocupo,idservicio,dni_medico):
 
 		nro_Referencia="0"
 		puesto=""
@@ -296,7 +296,7 @@ class Triaje(object):
 
 					else:
 						if cup<=30 and (id_fuente==1 or id_fuente==2):
-							self.obj_ConsultaTriaje.Insert_Cita(id_user,dni,id_fuente,nro_cupo,nro_Referencia,medico,consultorio,fecha_A,telefono,establecimiento,continuador,FUA,Historia,self.turno,tipocupo)							
+							self.obj_ConsultaTriaje.Insert_Cita(id_user,dni,id_fuente,nro_cupo,nro_Referencia,medico,consultorio,fecha_A,telefono,establecimiento,continuador,FUA,Historia,self.turno,tipocupo,idservicio,dni_medico)							
 							self.borrado_widget1()
 							messagebox.showinfo('Notificación','se guardó de manera exitosa')
 							if tipocupo==1:
@@ -306,7 +306,7 @@ class Triaje(object):
 								
 						
 						elif (cup>30 and cup<37) and id_fuente==3:
-							self.obj_ConsultaTriaje.Insert_Cita(id_user,dni,id_fuente,nro_cupo,nro_Referencia,medico,consultorio,fecha_A,telefono,establecimiento,continuador,FUA,Historia,self.turno,tipocupo)
+							self.obj_ConsultaTriaje.Insert_Cita(id_user,dni,id_fuente,nro_cupo,nro_Referencia,medico,consultorio,fecha_A,telefono,establecimiento,continuador,FUA,Historia,self.turno,tipocupo,idservicio,dni_medico)
 							self.borrado_widget1()
 							messagebox.showinfo('Notificación','se guardó de manera exitosa')
 							self.etiqueta_Cupo.configure(fg='red')

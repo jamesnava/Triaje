@@ -41,13 +41,18 @@ class queryTriaje(object):
 			obj_conectar.close_conection()
 			return rows
 		
-	def Insert_Cita(self,usuario,dni,fuente,cupo,n_referencia,medico,consultorio,fecha_Atencion,telefono,establecimiento,continuador,FUA,HCL,turno,tipocupo):
+	def Insert_Cita(self,usuario,dni,fuente,cupo,n_referencia,medico,consultorio,fecha_Atencion,telefono,establecimiento,continuador,FUA,HCL,turno,tipocupo,idservicio,dnimedico):
 		
 		obj_conectar=conect_bd.Conexion_Triaje()
 		obj_conectar.ejecutar_conn()
 		cursor=obj_conectar.get_cursor()
 		try:
-			sql=f"""INSERT INTO TRIAJE VALUES({usuario},'{dni}','{fuente}','{cupo}',{n_referencia},'{medico}','{consultorio}','{fecha_Atencion}','{telefono}','{establecimiento}','{continuador}','{FUA}','{HCL}','{turno}',GETDATE(),1,{tipocupo})"""
+			sql=f"""INSERT INTO TRIAJE(Id_Usuario,dni,idFuente,Nro_Cupo,Nro_Referencia,Medico,Especialidad,
+			Fecha_Atencion,Telefono,P_C,Continuador,FUA,Historia,Turno,FechaR,Id_Etriaje,ID_TIPOA,Cod_Servicio,DniMedico)
+			VALUES({usuario},'{dni}','{fuente}','{cupo}',{n_referencia},'{medico}','{consultorio}',
+			'{fecha_Atencion}','{telefono}','{establecimiento}','{continuador}','{FUA}','{HCL}','{turno}'
+			,GETDATE(),1,{tipocupo},'{idservicio}','{dnimedico}')"""
+
 			cursor.execute(sql)
 			cursor.commit()
 		except Exception as e:
@@ -77,13 +82,15 @@ class queryTriaje(object):
 			return id_modificado
 		
 
-	def query_Cupo(self,fecha,consultorio,medico,turno):
+	def query_Cupo(self,fecha,consultorio,Dmedico,turno):
 		obj_conectar=conect_bd.Conexion_Triaje()
 		obj_conectar.ejecutar_conn()
 		cursor=obj_conectar.get_cursor()
 		try:
 			rows=[]
-			sql=f"""SELECT Nro_Cupo,dni,Id_Etriaje,ID_TIPOA FROM TRIAJE WHERE (Fecha_Atencion='{fecha}' AND Especialidad='{consultorio}') AND (Medico='{medico}' AND Turno='{turno}')"""
+			sql=f"""SELECT Nro_Cupo,dni,Id_Etriaje,ID_TIPOA FROM TRIAJE 
+			WHERE (Fecha_Atencion='{fecha}' AND Especialidad='{consultorio}') 
+			AND (DniMedico='{Dmedico}' AND Turno='{turno}')"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
 			
@@ -143,13 +150,13 @@ class queryTriaje(object):
 			cursor.close()
 			obj_conectar.close_conection()		
 
-	def query_CupoNumber(self,fecha,consultorio,cupo,turno,medico):
+	def query_CupoNumber(self,fecha,consultorio,cupo,turno,Dmedico):
 		obj_conectar=conect_bd.Conexion_Triaje()
 		obj_conectar.ejecutar_conn()
 		cursor=obj_conectar.get_cursor()
 		try:
 			rows=[]
-			sql=f"""SELECT dni,Id_Etriaje FROM TRIAJE WHERE (Fecha_Atencion='{fecha}' AND Especialidad='{consultorio}' AND Nro_Cupo={cupo}) AND (Turno='{turno}' AND Medico='{medico}')"""
+			sql=f"""SELECT dni,Id_Etriaje FROM TRIAJE WHERE (Fecha_Atencion='{fecha}' AND Especialidad='{consultorio}' AND Nro_Cupo={cupo}) AND (Turno='{turno}' AND DniMedico='{Dmedico}')"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()			
 		except Exception as e:
@@ -342,8 +349,13 @@ class queryTriaje(object):
 
 		try:
 			rows=[]
-			sql=f"""SELECT T.Id_Triaje,T.Id_Usuario,T.dni,T.idFuente,T.Nro_Cupo,T.Nro_Referencia,T.Medico,T.Especialidad,CONVERT(VARCHAR,Fecha_Atencion,106) AS Fecha_Atencion,T.Telefono,T.P_C,T.Continuador,T.FUA,T.Historia,T.Turno,USUARIO.Usuario,FINANCIAMIENTO.fuente,T.FechaR,ET.estado FROM TRIAJE AS T INNER JOIN FINANCIAMIENTO ON T.idFuente=FINANCIAMIENTO.idFuente 
-			INNER JOIN USUARIO ON T.Id_Usuario=USUARIO.Id_Usuario INNER JOIN ESTADO_TRIAJE AS ET ON ET.Id_Etriaje=T.Id_Etriaje AND (T.Fecha_Atencion='{fecha}' AND T.Especialidad='{consultorio}' AND T.Nro_Cupo={cupo}) AND (T.Medico='{medico}' AND T.Turno='{turno}')"""
+			sql=f"""SELECT T.Id_Triaje,T.Id_Usuario,T.dni,T.idFuente,T.Nro_Cupo,T.Nro_Referencia
+			,T.Medico,T.Especialidad,CONVERT(VARCHAR,Fecha_Atencion,106) AS Fecha_Atencion,T.Telefono,
+			T.P_C,T.Continuador,T.FUA,T.Historia,T.Turno,USUARIO.Usuario,FINANCIAMIENTO.fuente,
+			T.FechaR,ET.estado FROM TRIAJE AS T INNER JOIN FINANCIAMIENTO ON T.idFuente=FINANCIAMIENTO.idFuente 
+			INNER JOIN USUARIO ON T.Id_Usuario=USUARIO.Id_Usuario INNER JOIN ESTADO_TRIAJE AS ET ON 
+			ET.Id_Etriaje=T.Id_Etriaje AND (T.Fecha_Atencion='{fecha}' AND T.Cod_Servicio='{consultorio}' 
+			AND T.Nro_Cupo={cupo}) AND (T.DniMedico='{medico}' AND T.Turno='{turno}')"""
 			cursor.execute(sql)
 			rows=cursor.fetchall()
 			
@@ -1030,6 +1042,7 @@ class queryTriaje(object):
 
 	def InsertarAsignaciones(self,idd,valor,estado):
 		sql=f"""INSERT INTO ASIGNACION VALUES({idd},'{valor}',{estado})"""
+		
 		self.cursor.execute(sql)
 		self.cursor.commit()
 		return self.cursor.rowcount
@@ -1047,6 +1060,101 @@ class queryTriaje(object):
 		rows=self.cursor.fetchall()
 		return rows
 
+	#insertar cupos
+	def InsertarCupos(self,valor):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""INSERT INTO CUPOS(Cod_Servicio,Turno,Medico,Fecha,Cantidad) 
+			VALUES('{valor[0]}','{valor[1]}','{valor[2]}','{valor[3]}',{valor[4]})"""
+			cursor.execute(sql)
+			cursor.commit()
+			nro=cursor.rowcount
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return nro
+
+	def ConsultaConfCupos(self,medico,servicio,turno,fecha):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""SELECT * FROM CUPOS WHERE Cod_Servicio={servicio} AND 
+			Turno='{turno}' AND Medico={medico} AND Fecha='{fecha}'"""
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+	def ConsultaCountCupos(self,dnimedico,servicio,turno,idtipo,fechai,fechaf):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""SELECT COUNT(*) AS cantidad FROM TRIAJE WHERE  
+			(DniMedico='{dnimedico}' AND TURNO='{turno}') 
+			AND (Cod_Servicio={servicio} AND ID_TIPOA={idtipo}) AND Fecha_Atencion 
+			BETWEEN '{fechai}' AND '{fechaf}'"""
+			
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	def ConsultaCountCuposXdia(self,dnimedico,servicio,turno,idtipo,fecha):
+		obj_conectar=conect_bd.Conexion_Triaje()
+		obj_conectar.ejecutar_conn()
+		cursor=obj_conectar.get_cursor()
+		try:
+			sql=f"""SELECT COUNT(*) AS cantidad FROM TRIAJE WHERE  
+			(DniMedico='{dnimedico}' AND TURNO='{turno}') 
+			AND (Cod_Servicio={servicio} AND ID_TIPOA={idtipo}) AND Fecha_Atencion='{fecha}'"""
+			
+			cursor.execute(sql)
+			rows=cursor.fetchall()
+			
+		except Exception as e:
+			print(e)
+		finally:
+			cursor.close()
+			obj_conectar.close_conection()
+			return rows
+
+	
+
+	def Update_DataTables(self,Tabla,datos,condicion,valorcondicion):
+		try:
+			obj_conectar=conect_bd.Conexion_Triaje()
+			obj_conectar.ejecutar_conn()
+			cursor=obj_conectar.get_cursor()
+			sql=f"UPDATE {Tabla} SET "
+			sql1=""
+			for clave,valor in datos.items():
+				sql1=sql1+f"{clave}={valor}, "
+			
+			sql=sql+sql1[:-2]+f" WHERE {condicion}={valorcondicion}"
+			
+			cursor.execute(sql)
+			cursor.commit()
+			cursor.close()
+			return cursor.rowcount
+		except pyodbc.Error as error:
+			print(">",error)
+		finally:
+			obj_conectar.close_conection()
 
 
 

@@ -10,11 +10,9 @@ import time
 class Login():
 	def __init__(self):
 		self.obj_usuario=usuario.usuario()
-		font_label=('Candara',16)
-		
+		font_label=('Candara',16)		
 		self.root=ThemedTk(theme='adapta')
-		#self.root=tb.Window(themename="flatly")
-		#self.root.title('Buscar Establecimiento')
+		
 		
 		self.root.resizable(width=False,height=False)
 		self.root.overrideredirect(True)
@@ -84,8 +82,7 @@ class Login():
 						time.sleep(0.1)				
 						if i==100:
 							break
-					self.root.withdraw()					
-					#self.root.destroy()									
+					self.root.withdraw()													
 					V_Main.Ventana_Principal(self.root,usuario,nivel,dni,idrol,iduser)
 
 				else:

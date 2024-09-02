@@ -30,91 +30,86 @@ class Rn(object):
 		label=Label(self.TopAIRN,text="Pinzam(min): ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=2,column=3,pady=10)
 		self.AEntry_PINZAMIENTO=ttk.Entry(self.TopAIRN,width=15)
-		self.AEntry_PINZAMIENTO.grid(row=2,column=4,pady=10)
-		#self.AEntry_PINZAMIENTO.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_PINZAMIENTO))
+		self.AEntry_PINZAMIENTO.grid(row=2,column=4,pady=10)	
 			
 		
 		label=Label(self.TopAIRN,text="LME(hh:mm): ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=2,column=5,pady=10)
-		self.AEntry_LME=ttk.Entry(self.TopAIRN,width=15)
-		#self.AEntry_LME.bind("<KeyRelease>",lambda event:self.EntryRPMValidar(event,self.AEntry_LME))
+		self.AEntry_LME=ttk.Entry(self.TopAIRN,width=15)	
 		self.AEntry_LME.grid(row=2,column=6,pady=10)
 
 		label=Label(self.TopAIRN,text="PA : ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=2,column=7,pady=10)
 		self.AEntry_PA=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_PA.grid(row=2,column=8,pady=10)
-		#self.AEntry_PA.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_PA) )
+		
 		
 
 		label=Label(self.TopAIRN,text="PESO(grs): ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=3,column=1,pady=10)
 		self.AEntry_PESO=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_PESO.grid(row=3,column=2,pady=10)
-		#self.AEntry_PESO.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_PESO) )
+		
 
 		label=Label(self.TopAIRN,text="TALLA(cm): ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=3,column=3,pady=10)
 		self.AEntry_TALLA=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_TALLA.grid(row=3,column=4,pady=10)
-		#self.AEntry_TALLA.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_TALLA) )
+		
 
 		label=Label(self.TopAIRN,text="PC : ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=3,column=5,pady=10)
 		self.AEntry_PC=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_PC.grid(row=3,column=6,pady=10)
-		#self.AEntry_PC.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_PC) )
+		
 
 		label=Label(self.TopAIRN,text="PT : ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=3,column=7,pady=10)
 		self.AEntry_PT=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_PT.grid(row=3,column=8,pady=10)
-		#self.AEntry_PT.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_PT) )
+		
 
 		
 		label=Label(self.TopAIRN,text="PB: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=4,column=1,pady=10)
 		self.AEntry_PB=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_PB.grid(row=4,column=2,pady=10)
-		#self.AEntry_PB.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_PB))
+		
 
 		label=Label(self.TopAIRN,text="EXFI: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=4,column=3,pady=10)
 		self.AEntry_EXFI=ttk.Entry(self.TopAIRN,width=15)
-		self.AEntry_EXFI.grid(row=4,column=4,pady=10)
-		#self.AEntry_EXFI.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_EXFI))
+		self.AEntry_EXFI.grid(row=4,column=4,pady=10)		
 
 
 		label=Label(self.TopAIRN,text="FUR: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=4,column=5,pady=10)
 		self.AEntry_FUR=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_FUR.grid(row=4,column=6,pady=10)
-		#self.AEntry_FUR.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_FUR))
+		
 
 		label=Label(self.TopAIRN,text="APGAR 1 : ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=4,column=7,pady=10)
 		self.AEntry_APGAR1=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_APGAR1.grid(row=4,column=8,pady=10)
-		#self.AEntry_APGAR1.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_APGAR1))
+		
 
 		label=Label(self.TopAIRN,text="APGAR 5 : ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=5,column=1,pady=10)
 		self.AEntry_APGAR5=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_APGAR5.grid(row=5,column=2,pady=10)
-		#self.AEntry_APGAR5.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_APGAR5))
+	
 
 		label=Label(self.TopAIRN,text="APGAR 10: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=5,column=3,pady=10)
 		self.AEntry_APGAR10=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_APGAR10.grid(row=5,column=4,pady=10)
-		#self.AEntry_APGAR10.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_APGAR10))
+		
 
 		label=Label(self.TopAIRN,text="TEMPERATURA: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=5,column=5,pady=10)
 		self.AEntry_TEMPERATURA=ttk.Entry(self.TopAIRN,width=15)
-		self.AEntry_TEMPERATURA.grid(row=5,column=6,pady=10)
-		#self.AEntry_TEMPERATURA.bind("<KeyRelease>",lambda event:self.validarDecimales(event,self.AEntry_TEMPERATURA) )
-								
+		self.AEntry_TEMPERATURA.grid(row=5,column=6,pady=10)								
 
 		label=Label(self.TopAIRN,text="COLOR AMNIOTICO: ",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=6,column=3,pady=10)
@@ -125,14 +120,12 @@ class Rn(object):
 		label.grid(row=6,column=5,pady=10)
 		self.AEntry_KRISTELLER=ttk.Entry(self.TopAIRN,width=15)
 		self.AEntry_KRISTELLER.grid(row=6,column=6,pady=10)
-		#self.AEntry_KRISTELLER.bind("<KeyRelease>",lambda event:self.validarDigit(event,self.AEntry_KRISTELLER))
-		#self.AEntry_KRISTELLER.bind("<FocusIn>",lambda event:self.on_entry_click(event,self.AEntry_KRISTELLER))
-		#self.AEntry_KRISTELLER.bind("<FocusOut>",lambda event:self.leave_entry_click(event,self.AEntry_KRISTELLER))
+		
 
 		label=Label(self.TopAIRN,text="Hora E.",font=('Arial',10,'bold'),bg="#273C6A",fg="#fff")
 		label.grid(row=5,column=7,pady=10)
 		self.time_EgresoAIRN=SpinTimePickerModern(self.TopAIRN)
-		self.time_EgresoAIRN.addAll(constants.HOURS24)
+		self.time_EgresoAIRN.addAll(constants.HOURS24)		
 		self.time_EgresoAIRN.configureAll(bg="#404040", height=1, fg="#ffffff", font=("Times", 16), hoverbg="#404040",hovercolor="#d73333", clickedbg="#2e2d2d", clickedcolor="#d73333")
 		self.time_EgresoAIRN.configure_separator(bg="#404040",fg="#fff")
 		self.time_EgresoAIRN.grid(row=5,column=8,pady=10)
@@ -243,7 +236,7 @@ class Rn(object):
 			self.AEntry_HCL.configure(state="readonly")			
 			self.AEntry_CNV.insert("end",val.CNV)
 			self.AEntry_PINZAMIENTO.insert("end",val.T_PINZA)
-			self.AEntry_LME.insert("end",val.INI_LME)
+			self.AEntry_LME.insert("end",str(val.INI_LME))
 			self.AEntry_PA.insert("end",val.PA)
 			self.AEntry_PESO.insert("end",val.PESO)
 			self.AEntry_TALLA.insert("end",val.TALLA)
@@ -260,7 +253,8 @@ class Rn(object):
 			self.AEntry_AMNIOTICO.insert("end",val.L_AMNIOTICO)
 			self.AEntry_KRISTELLER.insert("end",val.KRISTELLER)
 			self.AEntry_GRUPOF.insert("end",val.GRUPO_FACTOR)
-
+			self.time_EgresoAIRN.set24Hrs(val.H_EGRESO_AIRN[:val.H_EGRESO_AIRN.find(":")])
+			self.time_EgresoAIRN.setMins(val.H_EGRESO_AIRN[val.H_EGRESO_AIRN.find(":")+1:])
 	def UpdateAIR(self,idair):				
 		cnv=self.AEntry_CNV.get()
 		pinzamiento=self.AEntry_PINZAMIENTO.get()
